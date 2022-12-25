@@ -1,5 +1,9 @@
 # Ara Reporting
 
+[![Actions Status](https://github.com/ara-lang/reporting/workflows/ci/badge.svg)](https://github.com/ara-lang/reporting/actions)
+[![Crates.io](https://img.shields.io/crates/v/ara_reporting.svg)](https://crates.io/crates/ara_reporting)
+[![Docs](https://docs.rs/ara_reporting/badge.svg)](https://docs.rs/ara_reporting/latest/ara_reporting/)
+
 Ara reporting is an issue reporting library designed to be used within the Ara compiler.
 
 Internally, Ara reporting uses the [ariadne](https://crates.io/crates/ariadne) library to build a report of the issues found in the code.
