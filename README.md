@@ -44,4 +44,4 @@ dual licensed as above, without any additional terms or conditions.
 ## Credits
 
 * [Saif Eddin Gmati](https://github.com/azjezz)
-* [All contributors](https://github.com/ryangjchandler/php-parser-rs/graphs/contributors)
+* [All contributors](https://github.com/ara-lang/reporting/graphs/contributors)
