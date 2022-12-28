@@ -1,9 +1,4 @@
-use schemars::JsonSchema;
-use serde::Deserialize;
-use serde::Serialize;
-
-#[derive(Debug, PartialEq, Eq, Clone, Deserialize, Serialize, JsonSchema)]
-#[serde(rename_all = "snake_case")]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Source<'a> {
     pub origin: Option<&'a str>,
     pub content: &'a str,
@@ -63,23 +58,5 @@ impl Source<'_> {
             origin: None,
             content,
         }
-    }
-
-    /// Get the line number for the given position.
-    ///
-    /// Example:
-    ///
-    /// ```rust
-    /// use ara_reporting::source::Source;
-    ///
-    /// let source = Source::new("main.ara", "function 👋(): void {}");
-    ///
-    /// assert_eq!(source.get_character_position(20), 17);
-    /// ```
-    #[doc(hidden)]
-    pub fn get_character_position(&self, position: usize) -> usize {
-        let slice = &self.content[..position];
-
-        slice.chars().count()
     }
 }

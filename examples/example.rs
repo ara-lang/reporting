@@ -1,65 +1,76 @@
-use std::io::Result;
-
 use ara_reporting::annotation::Annotation;
+use ara_reporting::builder::CharSet;
+use ara_reporting::builder::ColorChoice;
 use ara_reporting::builder::ReportBuilder;
+use ara_reporting::error::Error;
 use ara_reporting::issue::Issue;
 use ara_reporting::source::Source;
 use ara_reporting::Report;
 
-fn main() -> Result<()> {
+fn main() -> Result<(), Error> {
     let source = Source::inline(
-        "
+        r#"
 function main(): int|string {
     $a = 1;
     $b = 2;
 
     $c = $a + $b;
 
-    (string) $c;
-}
+    $b = match ($a) {
+        1 => 2,
+        2 => 3,
+        default => "string",
+    };
 
-function fo⭕(): int|void {
-    $e = 1;
+    return $c + $b;
 }
-",
+"#,
     );
 
     let report = Report::new()
         .with_issue(
-            Issue::error("E0413", "standalone type `void` cannot be used in a union", 117, 4)
-                .with_annotation(
-                    Annotation::new(116, 1)
-                        .with_message("union is declared here")
-                )
-                .with_help("consider using `null` instead")
-                .with_note("`void`, and `never` are bottom types that cannot be used in unions, intersections, or type parameters")
+            Issue::error("E123", "some error here", 35, 7)
+                .with_annotation(Annotation::new(39, 1).with_message("an annotation"))
+                .with_help("this is a help")
+                .with_note("this is a note"),
         )
-       .with_issue(
-           Issue::notice("T0413", "the inferred return type `string` for function `main` is more specific than the declared return type `int|string`", 10, 4)
-               .with_annotation(
-                   Annotation::new(18, 10)
-                       .with_message("`int|string` is declared here")
-               )
-               .with_annotation(
-                   Annotation::new(79, 11)
-                       .with_message("`string` is inferred here")
-               )
-               .with_help("Consider changing the declared return type to `string`")
-       )
-       .with_issue(
-           Issue::deprecation("D0013", "using PHP's casting is deprecated", 79, 8)
-               .with_help("consider using the `as` keyword instead")
-       )
-       .with_issue(
-           Issue::warning("W0003", "variable `$e` is never used", 128, 2)
-               .with_help("consider removing the variable")
-               .with_note("if this is intentional, consider renaming the variable to `$_e`")
-       )
-        ;
+        .with_issue(
+            Issue::warning("W123", "some warning here", 29, 158)
+                .with_annotation(Annotation::new(126, 1).with_message("an annotation"))
+                .with_help("this is a help")
+                .with_note("this is a note"),
+        )
+        .with_issue(
+            Issue::note("N123", "some note here", 84, 80)
+                .with_annotation(Annotation::new(105, 7).with_message("an annotation"))
+                .with_annotation(Annotation::new(121, 7).with_message("another annotation"))
+                .with_annotation(Annotation::new(137, 20).with_message("and another"))
+                .with_help("this is a help")
+                .with_note("this is a note"),
+        )
+        .with_issue(
+            Issue::help("H123", "some help here", 137, 20)
+                .with_annotation(Annotation::new(35, 7).with_message("an annotation"))
+                .with_help("this is a help")
+                .with_note("this is a note"),
+        )
+        .with_issue(
+            Issue::bug("E123", "`match` arms have incompatible types", 84, 80)
+                .with_annotation(
+                    Annotation::new(110, 1).with_message("this is found to be of type `{int}`"),
+                )
+                .with_annotation(
+                    Annotation::new(126, 1).with_message("this is found to be of type `{int}`"),
+                )
+                .with_annotation(
+                    Annotation::new(148, 8).with_message("expected `{int}`, found `{string}`"),
+                )
+                .with_note("for more information about this error, try `ara --explain E0308`"),
+        );
 
     let builder = ReportBuilder::new(source, report)
-        .with_colors(true)
-        .with_ascii(false);
+        .with_colors(ColorChoice::Never)
+        .with_char_set(CharSet::Unicode);
 
     builder.print()
 }

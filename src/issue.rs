@@ -9,8 +9,9 @@ use crate::annotation::Annotation;
 pub enum IssueKind {
     Error,
     Warning,
-    Notice,
-    Deprecation,
+    Help,
+    Note,
+    Bug,
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Deserialize, Serialize, JsonSchema)]
@@ -87,7 +88,7 @@ impl Issue {
     /// use ara_reporting::issue::Issue;
     /// use ara_reporting::issue::IssueKind;
     ///
-    /// let issue = Issue::error("0003", "unexpected token `{`, expecting `[`", 10, 1);
+    /// let issue = Issue::error("0003", "...", 10, 1);
     ///
     /// assert_eq!(issue.kind, IssueKind::Error);
     /// ```
@@ -108,7 +109,7 @@ impl Issue {
     /// use ara_reporting::issue::Issue;
     /// use ara_reporting::issue::IssueKind;
     ///
-    /// let issue = Issue::warning("0003", "unexpected token `{`, expecting `[`", 10, 1);
+    /// let issue = Issue::warning("0003", "...", 10, 1);
     ///
     /// assert_eq!(issue.kind, IssueKind::Warning);
     /// ```
@@ -121,7 +122,7 @@ impl Issue {
         Self::new(IssueKind::Warning, code, message, position, length)
     }
 
-    /// Create a new notice issue with the given code and message.
+    /// Create a new help issue with the given code and message.
     ///
     /// Example:
     ///
@@ -129,20 +130,20 @@ impl Issue {
     /// use ara_reporting::issue::Issue;
     /// use ara_reporting::issue::IssueKind;
     ///
-    /// let issue = Issue::notice("0003", "unexpected token `{`, expecting `[`", 10, 1);
+    /// let issue = Issue::help("0003", "...", 10, 1);
     ///
-    /// assert_eq!(issue.kind, IssueKind::Notice);
+    /// assert_eq!(issue.kind, IssueKind::Help);
     /// ```
-    pub fn notice<S: Into<String>, C: Into<String>>(
+    pub fn help<S: Into<String>, C: Into<String>>(
         code: S,
         message: C,
         position: usize,
         length: usize,
     ) -> Self {
-        Self::new(IssueKind::Notice, code, message, position, length)
+        Self::new(IssueKind::Help, code, message, position, length)
     }
 
-    /// Create a new deprecation issue with the given code and message.
+    /// Create a new note issue with the given code and message.
     ///
     /// Example:
     ///
@@ -150,17 +151,38 @@ impl Issue {
     /// use ara_reporting::issue::Issue;
     /// use ara_reporting::issue::IssueKind;
     ///
-    /// let issue = Issue::deprecation("0003", "untyped properties are deprecated since version 0.0.0", 10, 1);
+    /// let issue = Issue::note("0003", "...", 10, 1);
     ///
-    /// assert_eq!(issue.kind, IssueKind::Deprecation);
+    /// assert_eq!(issue.kind, IssueKind::Note);
     /// ```
-    pub fn deprecation<S: Into<String>, C: Into<String>>(
+    pub fn note<S: Into<String>, C: Into<String>>(
         code: S,
         message: C,
         position: usize,
         length: usize,
     ) -> Self {
-        Self::new(IssueKind::Deprecation, code, message, position, length)
+        Self::new(IssueKind::Note, code, message, position, length)
+    }
+
+    /// Create a new bug issue with the given code and message.
+    ///
+    /// Example:
+    ///
+    /// ```rust
+    /// use ara_reporting::issue::Issue;
+    /// use ara_reporting::issue::IssueKind;
+    ///
+    /// let issue = Issue::bug("0003", "...", 10, 1);
+    ///
+    /// assert_eq!(issue.kind, IssueKind::Bug);
+    /// ```
+    pub fn bug<S: Into<String>, C: Into<String>>(
+        code: S,
+        message: C,
+        position: usize,
+        length: usize,
+    ) -> Self {
+        Self::new(IssueKind::Bug, code, message, position, length)
     }
 
     /// Add an annotation to this issue.
@@ -192,18 +214,20 @@ impl Issue {
 /// ```rust
 /// use ara_reporting::issue::IssueKind;
 ///
-/// assert_eq!(IssueKind::Error.to_string(), "Error");
-/// assert_eq!(IssueKind::Warning.to_string(), "Warning");
-/// assert_eq!(IssueKind::Notice.to_string(), "Notice");
-/// assert_eq!(IssueKind::Deprecation.to_string(), "Deprecation");
+/// assert_eq!(IssueKind::Error.to_string(), "error");
+/// assert_eq!(IssueKind::Warning.to_string(), "warning");
+/// assert_eq!(IssueKind::Help.to_string(), "help");
+/// assert_eq!(IssueKind::Note.to_string(), "note");
+/// assert_eq!(IssueKind::Bug.to_string(), "bug");
 /// ```
 impl std::fmt::Display for IssueKind {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            IssueKind::Error => write!(f, "Error"),
-            IssueKind::Warning => write!(f, "Warning"),
-            IssueKind::Notice => write!(f, "Notice"),
-            IssueKind::Deprecation => write!(f, "Deprecation"),
+            IssueKind::Error => write!(f, "error"),
+            IssueKind::Warning => write!(f, "warning"),
+            IssueKind::Help => write!(f, "help"),
+            IssueKind::Note => write!(f, "note"),
+            IssueKind::Bug => write!(f, "bug"),
         }
     }
 }
@@ -217,14 +241,14 @@ impl std::fmt::Display for IssueKind {
 ///
 /// let issue = Issue::error("E0231", "unexpected token `{`, expecting `[`", 10, 1);
 ///
-/// assert_eq!(issue.to_string(), "[E0231] Error: unexpected token `{`, expecting `[` at 10:1");
+/// assert_eq!(issue.to_string(), "error[E0231]: unexpected token `{`, expecting `[` at 10:1");
 /// ```
 impl std::fmt::Display for Issue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "[{}] {}: {} at {}:{}",
-            self.code, self.kind, self.message, self.position, self.length
+            "{}[{}]: {} at {}:{}",
+            self.kind, self.code, self.message, self.position, self.length
         )
     }
 }
