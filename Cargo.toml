@@ -2,7 +2,7 @@
 name = "ara_reporting"
 version = "0.3.0"
 edition = "2021"
-description = "Ara reporting library for for Ara Programming Langauge 📃"
+description = "A Reporting library for for Ara Programming Langauge 📃"
 readme = "README.md"
 repository = "https://github.com/ara-lang/reporting"
 documentation = "https://docs.rs/ara_reporting"
