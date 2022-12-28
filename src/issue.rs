@@ -20,6 +20,7 @@ pub struct Issue {
     pub kind: IssueKind,
     pub code: String,
     pub message: String,
+    pub origin: String,
     pub position: usize,
     pub length: usize,
     pub annotations: Vec<Annotation>,
@@ -38,9 +39,9 @@ pub struct Issue {
 /// use ara_reporting::issue::IssueKind;
 /// use ara_reporting::annotation::Annotation;
 ///
-/// let issue = Issue::error("0003", "standalone type `void` cannot be part of a union", 10, 4)
+/// let issue = Issue::error("0003", "standalone type `void` cannot be part of a union", "main.ara", 10, 4)
 ///     .with_annotation(
-///         Annotation::new(9, 1)
+///         Annotation::new("main.ara", 9, 1)
 ///             .with_message("union type starts here")
 ///     )
 ///    .with_note("`void`, `never`, and `mixed` are standalone types and cannot be part of a union, or an intersection")
@@ -61,10 +62,11 @@ pub struct Issue {
 /// ```
 impl Issue {
     /// Create a new issue with the given code and message.
-    pub fn new<S: Into<String>, C: Into<String>>(
+    pub fn new<C: Into<String>, M: Into<String>, O: Into<String>>(
         kind: IssueKind,
-        code: S,
-        message: C,
+        code: C,
+        message: M,
+        origin: O,
         position: usize,
         length: usize,
     ) -> Self {
@@ -72,6 +74,7 @@ impl Issue {
             kind,
             code: code.into(),
             message: message.into(),
+            origin: origin.into(),
             position,
             length,
             annotations: Vec::new(),
@@ -88,17 +91,18 @@ impl Issue {
     /// use ara_reporting::issue::Issue;
     /// use ara_reporting::issue::IssueKind;
     ///
-    /// let issue = Issue::error("0003", "...", 10, 1);
+    /// let issue = Issue::error("0003", "...", "main.ara", 10, 1);
     ///
     /// assert_eq!(issue.kind, IssueKind::Error);
     /// ```
-    pub fn error<S: Into<String>, C: Into<String>>(
-        code: S,
-        message: C,
+    pub fn error<C: Into<String>, M: Into<String>, O: Into<String>>(
+        code: C,
+        message: M,
+        origin: O,
         position: usize,
         length: usize,
     ) -> Self {
-        Self::new(IssueKind::Error, code, message, position, length)
+        Self::new(IssueKind::Error, code, message, origin, position, length)
     }
 
     /// Create a new warning issue with the given code and message.
@@ -109,17 +113,18 @@ impl Issue {
     /// use ara_reporting::issue::Issue;
     /// use ara_reporting::issue::IssueKind;
     ///
-    /// let issue = Issue::warning("0003", "...", 10, 1);
+    /// let issue = Issue::warning("0003", "...", "main.ara", 10, 1);
     ///
     /// assert_eq!(issue.kind, IssueKind::Warning);
     /// ```
-    pub fn warning<S: Into<String>, C: Into<String>>(
-        code: S,
-        message: C,
+    pub fn warning<C: Into<String>, M: Into<String>, O: Into<String>>(
+        code: C,
+        message: M,
+        origin: O,
         position: usize,
         length: usize,
     ) -> Self {
-        Self::new(IssueKind::Warning, code, message, position, length)
+        Self::new(IssueKind::Warning, code, message, origin, position, length)
     }
 
     /// Create a new help issue with the given code and message.
@@ -130,17 +135,18 @@ impl Issue {
     /// use ara_reporting::issue::Issue;
     /// use ara_reporting::issue::IssueKind;
     ///
-    /// let issue = Issue::help("0003", "...", 10, 1);
+    /// let issue = Issue::help("0003", "...", "main.ara", 10, 1);
     ///
     /// assert_eq!(issue.kind, IssueKind::Help);
     /// ```
-    pub fn help<S: Into<String>, C: Into<String>>(
-        code: S,
-        message: C,
+    pub fn help<C: Into<String>, M: Into<String>, O: Into<String>>(
+        code: C,
+        message: M,
+        origin: O,
         position: usize,
         length: usize,
     ) -> Self {
-        Self::new(IssueKind::Help, code, message, position, length)
+        Self::new(IssueKind::Help, code, message, origin, position, length)
     }
 
     /// Create a new note issue with the given code and message.
@@ -151,17 +157,18 @@ impl Issue {
     /// use ara_reporting::issue::Issue;
     /// use ara_reporting::issue::IssueKind;
     ///
-    /// let issue = Issue::note("0003", "...", 10, 1);
+    /// let issue = Issue::note("0003", "...", "main.ara", 10, 1);
     ///
     /// assert_eq!(issue.kind, IssueKind::Note);
     /// ```
-    pub fn note<S: Into<String>, C: Into<String>>(
-        code: S,
-        message: C,
+    pub fn note<C: Into<String>, M: Into<String>, O: Into<String>>(
+        code: C,
+        message: M,
+        origin: O,
         position: usize,
         length: usize,
     ) -> Self {
-        Self::new(IssueKind::Note, code, message, position, length)
+        Self::new(IssueKind::Note, code, message, origin, position, length)
     }
 
     /// Create a new bug issue with the given code and message.
@@ -172,17 +179,18 @@ impl Issue {
     /// use ara_reporting::issue::Issue;
     /// use ara_reporting::issue::IssueKind;
     ///
-    /// let issue = Issue::bug("0003", "...", 10, 1);
+    /// let issue = Issue::bug("0003", "...", "main.ara", 10, 1);
     ///
     /// assert_eq!(issue.kind, IssueKind::Bug);
     /// ```
-    pub fn bug<S: Into<String>, C: Into<String>>(
-        code: S,
-        message: C,
+    pub fn bug<C: Into<String>, M: Into<String>, O: Into<String>>(
+        code: C,
+        message: M,
+        origin: O,
         position: usize,
         length: usize,
     ) -> Self {
-        Self::new(IssueKind::Bug, code, message, position, length)
+        Self::new(IssueKind::Bug, code, message, origin, position, length)
     }
 
     /// Add an annotation to this issue.
@@ -239,16 +247,16 @@ impl std::fmt::Display for IssueKind {
 /// ```rust
 /// use ara_reporting::issue::Issue;
 ///
-/// let issue = Issue::error("E0231", "unexpected token `{`, expecting `[`", 10, 1);
+/// let issue = Issue::error("E0231", "unexpected token `{`, expecting `[`", "main.ara", 10, 1);
 ///
-/// assert_eq!(issue.to_string(), "error[E0231]: unexpected token `{`, expecting `[` at 10:1");
+/// assert_eq!(issue.to_string(), "error[E0231]: unexpected token `{`, expecting `[` at main.ara@10:1");
 /// ```
 impl std::fmt::Display for Issue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "{}[{}]: {} at {}:{}",
-            self.kind, self.code, self.message, self.position, self.length
+            "{}[{}]: {} at {}@{}:{}",
+            self.kind, self.code, self.message, self.origin, self.position, self.length
         )
     }
 }

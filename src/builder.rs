@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use codespan_reporting::diagnostic::{Diagnostic, Label};
 use codespan_reporting::files::Error as CodespanError;
 use codespan_reporting::files::SimpleFiles;
@@ -9,13 +11,14 @@ use termcolor::ColorChoice as TermColorChoice;
 use termcolor::StandardStream;
 use termcolor::WriteColor;
 
+use ara_source::SourceMap;
+
 use crate::error::Error;
 use crate::issue::IssueKind;
-use crate::source::Source;
 use crate::Report;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
-pub enum CharSet {
+pub enum Charset {
     Ascii,
     Unicode,
 }
@@ -27,12 +30,12 @@ pub enum ColorChoice {
     Never,
 }
 
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, Clone)]
 pub struct ReportBuilder<'a> {
-    pub source: Source<'a>,
+    pub source_map: &'a SourceMap,
     pub report: Report,
     pub colors: ColorChoice,
-    pub char_set: CharSet,
+    pub charset: Charset,
 }
 
 /// A report builder.
@@ -42,24 +45,29 @@ pub struct ReportBuilder<'a> {
 /// Example:
 ///
 /// ```rust
-/// use ara_reporting::builder::ReportBuilder;
-/// # use ara_reporting::source::Source;
-/// # use ara_reporting::Report;
-/// #
-/// # let source = Source::inline("function main(): void {}");
-/// # let report = Report::new();
+/// use ara_source::source::Source;
+/// use ara_source::source::SourceKind;
+/// use ara_source::SourceMap;
 ///
-/// let builder = ReportBuilder::new(source, report);
-/// # assert_eq!(builder.source.content, "function main(): void {}");
+/// use ara_reporting::builder::ReportBuilder;
+/// use ara_reporting::Report;
+///
+/// let report = Report::new();
+/// let source = SourceMap::new(vec![
+///     Source::inline(SourceKind::Script, "function main(): void {}"),
+/// ]);
+///
+/// let builder = ReportBuilder::new(&source, report);
+/// # assert_eq!(builder.source_map.sources[0].content, "function main(): void {}");
 /// ```
 impl ReportBuilder<'_> {
     /// Create a new report builder.
-    pub fn new(source: Source, report: Report) -> ReportBuilder {
+    pub fn new(source_map: &SourceMap, report: Report) -> ReportBuilder {
         ReportBuilder {
-            source,
+            source_map,
             report,
             colors: ColorChoice::Auto,
-            char_set: CharSet::Ascii,
+            charset: Charset::Ascii,
         }
     }
 
@@ -68,10 +76,17 @@ impl ReportBuilder<'_> {
     /// Example:
     ///
     /// ```rust
-    /// # use ara_reporting::builder::{ColorChoice, ReportBuilder};
-    /// # use ara_reporting::source::Source;
-    /// # let source = Source::inline("function main(): void {}");
-    /// # let builder = ReportBuilder::new(source, Default::default());
+    /// # use ara_source::source::Source;
+    /// # use ara_source::source::SourceKind;
+    /// # use ara_source::SourceMap;
+    /// # use ara_reporting::builder::ReportBuilder;
+    /// # use ara_reporting::builder::ColorChoice;
+    /// # use ara_reporting::Report;
+    /// # let report = Report::new();
+    /// # let source = SourceMap::new(vec![
+    /// #     Source::inline(SourceKind::Script, "function main(): void {}"),
+    /// # ]);
+    /// # let builder = ReportBuilder::new(&source, report);
     ///
     /// let builder = builder.with_colors(ColorChoice::Never);
     /// assert_eq!(builder.colors, ColorChoice::Never);
@@ -93,19 +108,26 @@ impl ReportBuilder<'_> {
     /// Example:
     ///
     /// ```rust
-    /// # use ara_reporting::builder::{CharSet, ReportBuilder};
-    /// # use ara_reporting::source::Source;
-    /// # let source = Source::inline("function main(): void {}");
-    /// # let builder = ReportBuilder::new(source, Default::default());
+    /// # use ara_source::source::Source;
+    /// # use ara_source::source::SourceKind;
+    /// # use ara_source::SourceMap;
+    /// # use ara_reporting::builder::ReportBuilder;
+    /// # use ara_reporting::builder::Charset;
+    /// # use ara_reporting::Report;
+    /// # let report = Report::new();
+    /// # let source = SourceMap::new(vec![
+    /// #     Source::inline(SourceKind::Script, "function main(): void {}"),
+    /// # ]);
+    /// # let builder = ReportBuilder::new(&source, report);
     ///
-    /// let builder = builder.with_char_set(CharSet::Ascii);
-    /// assert_eq!(builder.char_set, CharSet::Ascii);
+    /// let builder = builder.with_charset(Charset::Ascii);
+    /// assert_eq!(builder.charset, Charset::Ascii);
     ///
-    /// let builder = builder.with_char_set(CharSet::Unicode);
-    /// assert_eq!(builder.char_set, CharSet::Unicode);
+    /// let builder = builder.with_charset(Charset::Unicode);
+    /// assert_eq!(builder.charset, Charset::Unicode);
     /// ```
-    pub fn with_char_set(mut self, char_set: CharSet) -> Self {
-        self.char_set = char_set;
+    pub fn with_charset(mut self, charset: Charset) -> Self {
+        self.charset = charset;
 
         self
     }
@@ -113,9 +135,9 @@ impl ReportBuilder<'_> {
     /// Print the report to stdout.
     pub fn print(&self) -> Result<(), Error> {
         let mut writer = StandardStream::stdout(match self.colors {
-            ColorChoice::Always => match self.char_set {
-                CharSet::Ascii => TermColorChoice::AlwaysAnsi,
-                CharSet::Unicode => TermColorChoice::Always,
+            ColorChoice::Always => match self.charset {
+                Charset::Ascii => TermColorChoice::AlwaysAnsi,
+                Charset::Unicode => TermColorChoice::Always,
             },
             ColorChoice::Auto => TermColorChoice::Auto,
             ColorChoice::Never => TermColorChoice::Never,
@@ -127,9 +149,9 @@ impl ReportBuilder<'_> {
     /// Print the report to stderr.
     pub fn eprint(&self) -> Result<(), Error> {
         let mut writer = StandardStream::stderr(match self.colors {
-            ColorChoice::Always => match self.char_set {
-                CharSet::Ascii => TermColorChoice::AlwaysAnsi,
-                CharSet::Unicode => TermColorChoice::Always,
+            ColorChoice::Always => match self.charset {
+                Charset::Ascii => TermColorChoice::AlwaysAnsi,
+                Charset::Unicode => TermColorChoice::Always,
             },
             ColorChoice::Auto => TermColorChoice::Auto,
             ColorChoice::Never => TermColorChoice::Never,
@@ -141,9 +163,9 @@ impl ReportBuilder<'_> {
     /// Get the report as a string.
     pub fn as_string(&self) -> Result<String, Error> {
         let buffer = BufferWriter::stderr(match self.colors {
-            ColorChoice::Always => match self.char_set {
-                CharSet::Ascii => TermColorChoice::AlwaysAnsi,
-                CharSet::Unicode => TermColorChoice::Always,
+            ColorChoice::Always => match self.charset {
+                Charset::Ascii => TermColorChoice::AlwaysAnsi,
+                Charset::Unicode => TermColorChoice::Always,
             },
             ColorChoice::Auto => TermColorChoice::Auto,
             ColorChoice::Never => TermColorChoice::Never,
@@ -159,15 +181,21 @@ impl ReportBuilder<'_> {
     /// Write the report to the given writer.
     pub fn write<T: WriteColor>(&self, mut w: T) -> Result<(), Error> {
         let config = Config {
-            chars: match self.char_set {
-                CharSet::Ascii => Chars::ascii(),
-                CharSet::Unicode => Chars::box_drawing(),
+            chars: match self.charset {
+                Charset::Ascii => Chars::ascii(),
+                Charset::Unicode => Chars::box_drawing(),
             },
             ..Default::default()
         };
 
         let mut files = SimpleFiles::new();
-        let origin = files.add(self.source.origin.unwrap_or("inline"), self.source.content);
+        let mut ids = HashMap::new();
+        for source in &self.source_map.sources {
+            let name = source.name();
+            let file_id = files.add(name, &source.content);
+
+            ids.insert(name.to_string(), file_id);
+        }
 
         for issue in &self.report.issues {
             let mut diagnostic = match issue.kind {
@@ -182,7 +210,7 @@ impl ReportBuilder<'_> {
                 .with_code(&issue.code)
                 .with_message(&issue.message)
                 .with_labels(vec![Label::primary(
-                    origin,
+                    *ids.get(&issue.origin).unwrap_or(&0),
                     issue.position..(issue.position + issue.length),
                 )
                 .with_message(&issue.message)]);
@@ -201,7 +229,7 @@ impl ReportBuilder<'_> {
                     .iter()
                     .map(|annotation| {
                         let mut label = Label::secondary(
-                            origin,
+                            *ids.get(&annotation.origin).unwrap_or(&0),
                             (annotation.position)..(annotation.position + annotation.length),
                         );
 

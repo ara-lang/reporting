@@ -8,7 +8,6 @@ pub mod annotation;
 pub mod builder;
 pub mod error;
 pub mod issue;
-pub mod source;
 
 #[derive(Debug, PartialEq, Eq, Clone, Deserialize, Serialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
@@ -29,19 +28,23 @@ pub struct Report {
 ///
 ///
 /// let report = Report::new()
-///     .with_issue(Issue::error("0003", "standalone type `void` cannot be part of a union", 10, 4))
-///     .with_issue(Issue::warning("0023", "...", 9, 1))
+///     .with_issue(Issue::error("0003", "standalone type `void` cannot be part of a union", "main.ara", 10, 4))
+///     .with_issue(Issue::warning("0023", "...", "some_file.ara", 9, 1))
 /// ;
 ///
 /// assert_eq!(report.issues.len(), 2);
+///
 /// assert_eq!(report.issues[0].kind, IssueKind::Error);
 /// assert_eq!(report.issues[0].code, "0003");
 /// assert_eq!(report.issues[0].message, "standalone type `void` cannot be part of a union");
+/// assert_eq!(report.issues[0].origin, "main.ara");
 /// assert_eq!(report.issues[0].position, 10);
 /// assert_eq!(report.issues[0].length, 4);
+///
 /// assert_eq!(report.issues[1].kind, IssueKind::Warning);
 /// assert_eq!(report.issues[1].code, "0023");
 /// assert_eq!(report.issues[1].message, "...");
+/// assert_eq!(report.issues[1].origin, "some_file.ara");
 /// assert_eq!(report.issues[1].position, 9);
 /// assert_eq!(report.issues[1].length, 1);
 /// ```

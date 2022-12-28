@@ -6,6 +6,7 @@ use serde::Serialize;
 #[serde(rename_all = "snake_case")]
 pub struct Annotation {
     pub message: Option<String>,
+    pub origin: String,
     pub position: usize,
     pub length: usize,
 }
@@ -18,14 +19,17 @@ impl Annotation {
     /// ```rust
     /// use ara_reporting::annotation::Annotation;
     ///
-    /// let annotation = Annotation::new(0, 5);
+    /// let annotation = Annotation::new("main.ara", 0, 5);
     ///
+    /// assert_eq!(annotation.message, None);
+    /// assert_eq!(annotation.origin, "main.ara");
     /// assert_eq!(annotation.position, 0);
     /// assert_eq!(annotation.length, 5);
     /// ```
-    pub fn new(position: usize, length: usize) -> Self {
+    pub fn new<O: Into<String>>(origin: O, position: usize, length: usize) -> Self {
         Self {
             message: None,
+            origin: origin.into(),
             position,
             length,
         }
@@ -38,7 +42,7 @@ impl Annotation {
     /// ```rust
     /// use ara_reporting::annotation::Annotation;
     ///
-    /// let annotation = Annotation::new(10, 1)
+    /// let annotation = Annotation::new("main.ara", 10, 1)
     ///     .with_message("try removing this semicolon");
     ///
     /// assert_eq!(annotation.message, Some("try removing this semicolon".to_string()));

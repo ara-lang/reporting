@@ -4,7 +4,7 @@
 [![Crates.io](https://img.shields.io/crates/v/ara_reporting.svg)](https://crates.io/crates/ara_reporting)
 [![Docs](https://docs.rs/ara_reporting/badge.svg)](https://docs.rs/ara_reporting/latest/ara_reporting/)
 
-Ara reporting is an issue reporting library designed to be used within the Ara compiler.
+Ara reporting library for for Ara Programming Langauge 📃
 
 Internally, Ara reporting uses the [codespan-reporting](https://github.com/brendanzab/codespan) library to build a report of the issues found in the code.
 
@@ -23,42 +23,49 @@ ara_reporting = "0.2.0"
 
 ```rust
 use ara_reporting::annotation::Annotation;
-use ara_reporting::builder::CharSet;
+use ara_reporting::builder::Charset;
 use ara_reporting::builder::ColorChoice;
 use ara_reporting::builder::ReportBuilder;
 use ara_reporting::error::Error;
 use ara_reporting::issue::Issue;
-use ara_reporting::source::Source;
 use ara_reporting::Report;
+use ara_source::source::Source;
+use ara_source::source::SourceKind;
+use ara_source::SourceMap;
 
 fn main() -> Result<(), Error> {
-    let source = Source::inline(
-        r#"
+    let origin = "example.ara";
+    let code = r#"
 $b = match $a {
     1 => 2,
     2 => 3,
     default => "string",
 };
-"#,
-    );
+"#;
 
-    let report = Report::new().with_issue(
-        Issue::error("E0417", "`match` arms have incompatible types", 6, 61)
-            .with_annotation(
-                Annotation::new(26, 1).with_message("this is found to be of type `{int}`"),
-            )
-            .with_annotation(
-                Annotation::new(38, 1).with_message("this is found to be of type `{int}`"),
-            )
-            .with_annotation(
-                Annotation::new(56, 8).with_message("expected `{int}`, found `{string}`"),
-            )
-            .with_note("for more information about this error, try `ara --explain E0417`"),
-    );
+    let map = SourceMap::new(vec![
+        Source::new(SourceKind::Script, origin, code)
+    ]);
 
-    let builder = ReportBuilder::new(source, report)
+    let report = Report::new()
+        .with_issue(
+            Issue::error("E0417", "`match` arms have incompatible types", origin, 6, 61)
+                .with_annotation(
+                    Annotation::new(origin, 26, 1).with_message("this is found to be of type `{int}`"),
+                )
+                .with_annotation(
+                    Annotation::new(origin, 38, 1).with_message("this is found to be of type `{int}`"),
+                )
+                .with_annotation(
+                    Annotation::new(origin, 56, 8).with_message("expected `{int}`, found `{string}`"),
+                )
+                .with_note("for more information about this error, try `ara --explain E0417`"),
+        )
+    ;
+
+    let builder = ReportBuilder::new(&map, report)
         .with_colors(ColorChoice::Always)
-        .with_char_set(CharSet::Unicode);
+        .with_charset(Charset::Unicode);
 
     builder.print()
 }
