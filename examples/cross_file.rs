@@ -42,14 +42,14 @@ function add(int $a, int $b): int {
             "mismatched types expected `{int}`, found `{string}`",
             "src/main.ara",
             68,
-            3,
+            71,
         )
         .with_annotation(
-            Annotation::new("src/main.ara", 61, 12)
+            Annotation::new("src/main.ara", 61, 64)
                 .with_message("arguments to this function are incorrect"),
         )
         .with_annotation(
-            Annotation::new("vendor/some-vendor/some-lib/src/add.ara", 27, 24)
+            Annotation::new("vendor/some-vendor/some-lib/src/add.ara", 27, 51)
                 .with_message("function defined here"),
         )
         .with_note(

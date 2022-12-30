@@ -21,8 +21,8 @@ pub struct Issue {
     pub code: String,
     pub message: String,
     pub origin: String,
-    pub position: usize,
-    pub length: usize,
+    pub from: usize,
+    pub to: usize,
     pub annotations: Vec<Annotation>,
     pub note: Option<String>,
     pub help: Option<String>,
@@ -39,9 +39,9 @@ pub struct Issue {
 /// use ara_reporting::issue::IssueKind;
 /// use ara_reporting::annotation::Annotation;
 ///
-/// let issue = Issue::error("0003", "standalone type `void` cannot be part of a union", "main.ara", 10, 4)
+/// let issue = Issue::error("0003", "standalone type `void` cannot be part of a union", "main.ara", 10, 14)
 ///     .with_annotation(
-///         Annotation::new("main.ara", 9, 1)
+///         Annotation::new("main.ara", 9, 10)
 ///             .with_message("union type starts here")
 ///     )
 ///    .with_note("`void`, `never`, and `mixed` are standalone types and cannot be part of a union, or an intersection")
@@ -51,11 +51,11 @@ pub struct Issue {
 /// assert_eq!(issue.kind, IssueKind::Error);
 /// assert_eq!(issue.code, "0003");
 /// assert_eq!(issue.message, "standalone type `void` cannot be part of a union");
-/// assert_eq!(issue.position, 10);
-/// assert_eq!(issue.length, 4);
+/// assert_eq!(issue.from, 10);
+/// assert_eq!(issue.to, 14);
 /// assert_eq!(issue.annotations.len(), 1);
-/// assert_eq!(issue.annotations[0].position, 9);
-/// assert_eq!(issue.annotations[0].length, 1);
+/// assert_eq!(issue.annotations[0].from, 9);
+/// assert_eq!(issue.annotations[0].to, 10);
 /// assert_eq!(issue.annotations[0].message, Some("union type starts here".to_string()));
 /// assert_eq!(issue.note, Some("`void`, `never`, and `mixed` are standalone types and cannot be part of a union, or an intersection".to_string()));
 /// assert_eq!(issue.help, Some("consider using `null` instead of `void`".to_string()));
@@ -67,16 +67,16 @@ impl Issue {
         code: C,
         message: M,
         origin: O,
-        position: usize,
-        length: usize,
+        from: usize,
+        to: usize,
     ) -> Self {
         Self {
             kind,
             code: code.into(),
             message: message.into(),
             origin: origin.into(),
-            position,
-            length,
+            from,
+            to,
             annotations: Vec::new(),
             note: None,
             help: None,
@@ -91,7 +91,7 @@ impl Issue {
     /// use ara_reporting::issue::Issue;
     /// use ara_reporting::issue::IssueKind;
     ///
-    /// let issue = Issue::error("0003", "...", "main.ara", 10, 1);
+    /// let issue = Issue::error("0003", "...", "main.ara", 10, 11);
     ///
     /// assert_eq!(issue.kind, IssueKind::Error);
     /// ```
@@ -99,10 +99,10 @@ impl Issue {
         code: C,
         message: M,
         origin: O,
-        position: usize,
-        length: usize,
+        from: usize,
+        to: usize,
     ) -> Self {
-        Self::new(IssueKind::Error, code, message, origin, position, length)
+        Self::new(IssueKind::Error, code, message, origin, from, to)
     }
 
     /// Create a new warning issue with the given code and message.
@@ -113,7 +113,7 @@ impl Issue {
     /// use ara_reporting::issue::Issue;
     /// use ara_reporting::issue::IssueKind;
     ///
-    /// let issue = Issue::warning("0003", "...", "main.ara", 10, 1);
+    /// let issue = Issue::warning("0003", "...", "main.ara", 10, 11);
     ///
     /// assert_eq!(issue.kind, IssueKind::Warning);
     /// ```
@@ -121,10 +121,10 @@ impl Issue {
         code: C,
         message: M,
         origin: O,
-        position: usize,
-        length: usize,
+        from: usize,
+        to: usize,
     ) -> Self {
-        Self::new(IssueKind::Warning, code, message, origin, position, length)
+        Self::new(IssueKind::Warning, code, message, origin, from, to)
     }
 
     /// Create a new help issue with the given code and message.
@@ -135,7 +135,7 @@ impl Issue {
     /// use ara_reporting::issue::Issue;
     /// use ara_reporting::issue::IssueKind;
     ///
-    /// let issue = Issue::help("0003", "...", "main.ara", 10, 1);
+    /// let issue = Issue::help("0003", "...", "main.ara", 10, 11);
     ///
     /// assert_eq!(issue.kind, IssueKind::Help);
     /// ```
@@ -143,10 +143,10 @@ impl Issue {
         code: C,
         message: M,
         origin: O,
-        position: usize,
-        length: usize,
+        from: usize,
+        to: usize,
     ) -> Self {
-        Self::new(IssueKind::Help, code, message, origin, position, length)
+        Self::new(IssueKind::Help, code, message, origin, from, to)
     }
 
     /// Create a new note issue with the given code and message.
@@ -157,7 +157,7 @@ impl Issue {
     /// use ara_reporting::issue::Issue;
     /// use ara_reporting::issue::IssueKind;
     ///
-    /// let issue = Issue::note("0003", "...", "main.ara", 10, 1);
+    /// let issue = Issue::note("0003", "...", "main.ara", 10, 11);
     ///
     /// assert_eq!(issue.kind, IssueKind::Note);
     /// ```
@@ -165,10 +165,10 @@ impl Issue {
         code: C,
         message: M,
         origin: O,
-        position: usize,
-        length: usize,
+        from: usize,
+        to: usize,
     ) -> Self {
-        Self::new(IssueKind::Note, code, message, origin, position, length)
+        Self::new(IssueKind::Note, code, message, origin, from, to)
     }
 
     /// Create a new bug issue with the given code and message.
@@ -179,7 +179,7 @@ impl Issue {
     /// use ara_reporting::issue::Issue;
     /// use ara_reporting::issue::IssueKind;
     ///
-    /// let issue = Issue::bug("0003", "...", "main.ara", 10, 1);
+    /// let issue = Issue::bug("0003", "...", "main.ara", 10, 11);
     ///
     /// assert_eq!(issue.kind, IssueKind::Bug);
     /// ```
@@ -187,10 +187,10 @@ impl Issue {
         code: C,
         message: M,
         origin: O,
-        position: usize,
-        length: usize,
+        from: usize,
+        to: usize,
     ) -> Self {
-        Self::new(IssueKind::Bug, code, message, origin, position, length)
+        Self::new(IssueKind::Bug, code, message, origin, from, to)
     }
 
     /// Add an annotation to this issue.
@@ -256,7 +256,7 @@ impl std::fmt::Display for Issue {
         write!(
             f,
             "{}[{}]: {} at {}@{}:{}",
-            self.kind, self.code, self.message, self.origin, self.position, self.length
+            self.kind, self.code, self.message, self.origin, self.from, self.to
         )
     }
 }

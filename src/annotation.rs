@@ -7,8 +7,8 @@ use serde::Serialize;
 pub struct Annotation {
     pub message: Option<String>,
     pub origin: String,
-    pub position: usize,
-    pub length: usize,
+    pub from: usize,
+    pub to: usize,
 }
 
 impl Annotation {
@@ -23,15 +23,15 @@ impl Annotation {
     ///
     /// assert_eq!(annotation.message, None);
     /// assert_eq!(annotation.origin, "main.ara");
-    /// assert_eq!(annotation.position, 0);
-    /// assert_eq!(annotation.length, 5);
+    /// assert_eq!(annotation.from, 0);
+    /// assert_eq!(annotation.to, 5);
     /// ```
-    pub fn new<O: Into<String>>(origin: O, position: usize, length: usize) -> Self {
+    pub fn new<O: Into<String>>(origin: O, from: usize, to: usize) -> Self {
         Self {
             message: None,
             origin: origin.into(),
-            position,
-            length,
+            from,
+            to,
         }
     }
 

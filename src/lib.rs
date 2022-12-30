@@ -28,8 +28,8 @@ pub struct Report {
 ///
 ///
 /// let report = Report::new()
-///     .with_issue(Issue::error("0003", "standalone type `void` cannot be part of a union", "main.ara", 10, 4))
-///     .with_issue(Issue::warning("0023", "...", "some_file.ara", 9, 1))
+///     .with_issue(Issue::error("0003", "standalone type `void` cannot be part of a union", "main.ara", 10, 14))
+///     .with_issue(Issue::warning("0023", "...", "some_file.ara", 9, 10))
 /// ;
 ///
 /// assert_eq!(report.issues.len(), 2);
@@ -38,15 +38,15 @@ pub struct Report {
 /// assert_eq!(report.issues[0].code, "0003");
 /// assert_eq!(report.issues[0].message, "standalone type `void` cannot be part of a union");
 /// assert_eq!(report.issues[0].origin, "main.ara");
-/// assert_eq!(report.issues[0].position, 10);
-/// assert_eq!(report.issues[0].length, 4);
+/// assert_eq!(report.issues[0].from, 10);
+/// assert_eq!(report.issues[0].to, 14);
 ///
 /// assert_eq!(report.issues[1].kind, IssueKind::Warning);
 /// assert_eq!(report.issues[1].code, "0023");
 /// assert_eq!(report.issues[1].message, "...");
 /// assert_eq!(report.issues[1].origin, "some_file.ara");
-/// assert_eq!(report.issues[1].position, 9);
-/// assert_eq!(report.issues[1].length, 1);
+/// assert_eq!(report.issues[1].from, 9);
+/// assert_eq!(report.issues[1].to, 10);
 /// ```
 impl Report {
     /// Create a new report.

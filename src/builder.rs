@@ -211,7 +211,7 @@ impl ReportBuilder<'_> {
                 .with_message(&issue.message)
                 .with_labels(vec![Label::primary(
                     *ids.get(&issue.origin).unwrap_or(&0),
-                    issue.position..(issue.position + issue.length),
+                    issue.from..issue.to,
                 )
                 .with_message(&issue.message)]);
 
@@ -230,7 +230,7 @@ impl ReportBuilder<'_> {
                     .map(|annotation| {
                         let mut label = Label::secondary(
                             *ids.get(&annotation.origin).unwrap_or(&0),
-                            (annotation.position)..(annotation.position + annotation.length),
+                            annotation.from..annotation.to,
                         );
 
                         if let Some(message) = &annotation.message {
