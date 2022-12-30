@@ -4,7 +4,7 @@
 [![Crates.io](https://img.shields.io/crates/v/ara_reporting.svg)](https://crates.io/crates/ara_reporting)
 [![Docs](https://docs.rs/ara_reporting/badge.svg)](https://docs.rs/ara_reporting/latest/ara_reporting/)
 
-A Reporting library for for Ara Programming Langauge 📃
+A Reporting library for for Ara Programming Language 📃
 
 Internally, Ara reporting uses the [codespan-reporting](https://github.com/brendanzab/codespan) library to build a report of the issues found in the code.
 
