@@ -76,3 +76,9 @@ impl std::fmt::Display for Report {
         Ok(())
     }
 }
+
+impl Into<Report> for Issue {
+    fn into(self) -> Report {
+        Report { issues: vec![self] }
+    }
+}
