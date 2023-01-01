@@ -1,6 +1,6 @@
 [package]
 name = "ara_reporting"
-version = "0.4.1"
+version = "0.4.2"
 edition = "2021"
 description = "A Reporting library for for Ara Programming Language 📃"
 readme = "README.md"
@@ -15,7 +15,7 @@ keywords = ["ara", "error-reporting"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-ara_source = { version = "0.1.0" }
+ara_source = { version = "0.2.0" }
 codespan-reporting = { version = "0.11.1", features = ["serialization"] }
 schemars = { version = "0.8.11" }
 serde = { version = "1.0.149", features = ["derive"] }
