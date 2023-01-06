@@ -6,7 +6,7 @@ use crate::annotation::Annotation;
 
 #[derive(Debug, PartialEq, Eq, Clone, Deserialize, Serialize, JsonSchema)]
 #[serde(rename_all = "snake_case", tag = "type")]
-pub enum IssueKind {
+pub enum IssueSeverity {
     Error,
     Warning,
     Help,
@@ -17,7 +17,7 @@ pub enum IssueKind {
 #[derive(Debug, PartialEq, Eq, Clone, Deserialize, Serialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub struct Issue {
-    pub kind: IssueKind,
+    pub kind: IssueSeverity,
     pub code: String,
     pub message: String,
     pub origin: String,
@@ -36,7 +36,7 @@ pub struct Issue {
 ///
 /// ```rust
 /// use ara_reporting::issue::Issue;
-/// use ara_reporting::issue::IssueKind;
+/// use ara_reporting::issue::IssueSeverity;
 /// use ara_reporting::annotation::Annotation;
 ///
 /// let issue = Issue::error("0003", "standalone type `void` cannot be part of a union", "main.ara", 10, 14)
@@ -48,7 +48,7 @@ pub struct Issue {
 ///    .with_help("consider using `null` instead of `void`")
 /// ;
 ///
-/// assert_eq!(issue.kind, IssueKind::Error);
+/// assert_eq!(issue.kind, IssueSeverity::Error);
 /// assert_eq!(issue.code, "0003");
 /// assert_eq!(issue.message, "standalone type `void` cannot be part of a union");
 /// assert_eq!(issue.from, 10);
@@ -63,7 +63,7 @@ pub struct Issue {
 impl Issue {
     /// Create a new issue with the given code and message.
     pub fn new<C: Into<String>, M: Into<String>, O: Into<String>>(
-        kind: IssueKind,
+        kind: IssueSeverity,
         code: C,
         message: M,
         origin: O,
@@ -89,11 +89,11 @@ impl Issue {
     ///
     /// ```rust
     /// use ara_reporting::issue::Issue;
-    /// use ara_reporting::issue::IssueKind;
+    /// use ara_reporting::issue::IssueSeverity;
     ///
     /// let issue = Issue::error("0003", "...", "main.ara", 10, 11);
     ///
-    /// assert_eq!(issue.kind, IssueKind::Error);
+    /// assert_eq!(issue.kind, IssueSeverity::Error);
     /// ```
     pub fn error<C: Into<String>, M: Into<String>, O: Into<String>>(
         code: C,
@@ -102,7 +102,7 @@ impl Issue {
         from: usize,
         to: usize,
     ) -> Self {
-        Self::new(IssueKind::Error, code, message, origin, from, to)
+        Self::new(IssueSeverity::Error, code, message, origin, from, to)
     }
 
     /// Create a new warning issue with the given code and message.
@@ -111,11 +111,11 @@ impl Issue {
     ///
     /// ```rust
     /// use ara_reporting::issue::Issue;
-    /// use ara_reporting::issue::IssueKind;
+    /// use ara_reporting::issue::IssueSeverity;
     ///
     /// let issue = Issue::warning("0003", "...", "main.ara", 10, 11);
     ///
-    /// assert_eq!(issue.kind, IssueKind::Warning);
+    /// assert_eq!(issue.kind, IssueSeverity::Warning);
     /// ```
     pub fn warning<C: Into<String>, M: Into<String>, O: Into<String>>(
         code: C,
@@ -124,7 +124,7 @@ impl Issue {
         from: usize,
         to: usize,
     ) -> Self {
-        Self::new(IssueKind::Warning, code, message, origin, from, to)
+        Self::new(IssueSeverity::Warning, code, message, origin, from, to)
     }
 
     /// Create a new help issue with the given code and message.
@@ -133,11 +133,11 @@ impl Issue {
     ///
     /// ```rust
     /// use ara_reporting::issue::Issue;
-    /// use ara_reporting::issue::IssueKind;
+    /// use ara_reporting::issue::IssueSeverity;
     ///
     /// let issue = Issue::help("0003", "...", "main.ara", 10, 11);
     ///
-    /// assert_eq!(issue.kind, IssueKind::Help);
+    /// assert_eq!(issue.kind, IssueSeverity::Help);
     /// ```
     pub fn help<C: Into<String>, M: Into<String>, O: Into<String>>(
         code: C,
@@ -146,7 +146,7 @@ impl Issue {
         from: usize,
         to: usize,
     ) -> Self {
-        Self::new(IssueKind::Help, code, message, origin, from, to)
+        Self::new(IssueSeverity::Help, code, message, origin, from, to)
     }
 
     /// Create a new note issue with the given code and message.
@@ -155,11 +155,11 @@ impl Issue {
     ///
     /// ```rust
     /// use ara_reporting::issue::Issue;
-    /// use ara_reporting::issue::IssueKind;
+    /// use ara_reporting::issue::IssueSeverity;
     ///
     /// let issue = Issue::note("0003", "...", "main.ara", 10, 11);
     ///
-    /// assert_eq!(issue.kind, IssueKind::Note);
+    /// assert_eq!(issue.kind, IssueSeverity::Note);
     /// ```
     pub fn note<C: Into<String>, M: Into<String>, O: Into<String>>(
         code: C,
@@ -168,7 +168,7 @@ impl Issue {
         from: usize,
         to: usize,
     ) -> Self {
-        Self::new(IssueKind::Note, code, message, origin, from, to)
+        Self::new(IssueSeverity::Note, code, message, origin, from, to)
     }
 
     /// Create a new bug issue with the given code and message.
@@ -177,11 +177,11 @@ impl Issue {
     ///
     /// ```rust
     /// use ara_reporting::issue::Issue;
-    /// use ara_reporting::issue::IssueKind;
+    /// use ara_reporting::issue::IssueSeverity;
     ///
     /// let issue = Issue::bug("0003", "...", "main.ara", 10, 11);
     ///
-    /// assert_eq!(issue.kind, IssueKind::Bug);
+    /// assert_eq!(issue.kind, IssueSeverity::Bug);
     /// ```
     pub fn bug<C: Into<String>, M: Into<String>, O: Into<String>>(
         code: C,
@@ -190,7 +190,7 @@ impl Issue {
         from: usize,
         to: usize,
     ) -> Self {
-        Self::new(IssueKind::Bug, code, message, origin, from, to)
+        Self::new(IssueSeverity::Bug, code, message, origin, from, to)
     }
 
     /// Add an annotation to this issue.
@@ -220,22 +220,22 @@ impl Issue {
 /// Example:
 ///
 /// ```rust
-/// use ara_reporting::issue::IssueKind;
+/// use ara_reporting::issue::IssueSeverity;
 ///
-/// assert_eq!(IssueKind::Error.to_string(), "error");
-/// assert_eq!(IssueKind::Warning.to_string(), "warning");
-/// assert_eq!(IssueKind::Help.to_string(), "help");
-/// assert_eq!(IssueKind::Note.to_string(), "note");
-/// assert_eq!(IssueKind::Bug.to_string(), "bug");
+/// assert_eq!(IssueSeverity::Error.to_string(), "error");
+/// assert_eq!(IssueSeverity::Warning.to_string(), "warning");
+/// assert_eq!(IssueSeverity::Help.to_string(), "help");
+/// assert_eq!(IssueSeverity::Note.to_string(), "note");
+/// assert_eq!(IssueSeverity::Bug.to_string(), "bug");
 /// ```
-impl std::fmt::Display for IssueKind {
+impl std::fmt::Display for IssueSeverity {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            IssueKind::Error => write!(f, "error"),
-            IssueKind::Warning => write!(f, "warning"),
-            IssueKind::Help => write!(f, "help"),
-            IssueKind::Note => write!(f, "note"),
-            IssueKind::Bug => write!(f, "bug"),
+            IssueSeverity::Error => write!(f, "error"),
+            IssueSeverity::Warning => write!(f, "warning"),
+            IssueSeverity::Help => write!(f, "help"),
+            IssueSeverity::Note => write!(f, "note"),
+            IssueSeverity::Bug => write!(f, "bug"),
         }
     }
 }
