@@ -14,7 +14,7 @@ use termcolor::WriteColor;
 use ara_source::SourceMap;
 
 use crate::error::Error;
-use crate::issue::IssueKind;
+use crate::issue::IssueSeverity;
 use crate::Report;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
@@ -199,11 +199,11 @@ impl ReportBuilder<'_> {
 
         for issue in &self.report.issues {
             let mut diagnostic = match issue.kind {
-                IssueKind::Error => Diagnostic::error(),
-                IssueKind::Warning => Diagnostic::warning(),
-                IssueKind::Note => Diagnostic::note(),
-                IssueKind::Help => Diagnostic::help(),
-                IssueKind::Bug => Diagnostic::bug(),
+                IssueSeverity::Error => Diagnostic::error(),
+                IssueSeverity::Warning => Diagnostic::warning(),
+                IssueSeverity::Note => Diagnostic::note(),
+                IssueSeverity::Help => Diagnostic::help(),
+                IssueSeverity::Bug => Diagnostic::bug(),
             };
 
             diagnostic = diagnostic

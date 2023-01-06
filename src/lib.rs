@@ -24,7 +24,7 @@ pub struct Report {
 /// ```rust
 /// use ara_reporting::Report;
 /// use ara_reporting::issue::Issue;
-/// use ara_reporting::issue::IssueKind;
+/// use ara_reporting::issue::IssueSeverity;
 ///
 ///
 /// let report = Report::new()
@@ -34,14 +34,14 @@ pub struct Report {
 ///
 /// assert_eq!(report.issues.len(), 2);
 ///
-/// assert_eq!(report.issues[0].kind, IssueKind::Error);
+/// assert_eq!(report.issues[0].kind, IssueSeverity::Error);
 /// assert_eq!(report.issues[0].code, "0003");
 /// assert_eq!(report.issues[0].message, "standalone type `void` cannot be part of a union");
 /// assert_eq!(report.issues[0].origin, "main.ara");
 /// assert_eq!(report.issues[0].from, 10);
 /// assert_eq!(report.issues[0].to, 14);
 ///
-/// assert_eq!(report.issues[1].kind, IssueKind::Warning);
+/// assert_eq!(report.issues[1].kind, IssueSeverity::Warning);
 /// assert_eq!(report.issues[1].code, "0023");
 /// assert_eq!(report.issues[1].message, "...");
 /// assert_eq!(report.issues[1].origin, "some_file.ara");
@@ -77,8 +77,8 @@ impl std::fmt::Display for Report {
     }
 }
 
-impl Into<Report> for Issue {
-    fn into(self) -> Report {
-        Report { issues: vec![self] }
+impl From<Issue> for Report {
+    fn from(val: Issue) -> Self {
+        Report { issues: vec![val] }
     }
 }
