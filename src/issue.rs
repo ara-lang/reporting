@@ -17,7 +17,7 @@ pub enum IssueSeverity {
 #[derive(Debug, PartialEq, Eq, Clone, Deserialize, Serialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub struct Issue {
-    pub kind: IssueSeverity,
+    pub severity: IssueSeverity,
     pub code: String,
     pub message: String,
     pub origin: String,
@@ -48,7 +48,7 @@ pub struct Issue {
 ///    .with_help("consider using `null` instead of `void`")
 /// ;
 ///
-/// assert_eq!(issue.kind, IssueSeverity::Error);
+/// assert_eq!(issue.severity, IssueSeverity::Error);
 /// assert_eq!(issue.code, "0003");
 /// assert_eq!(issue.message, "standalone type `void` cannot be part of a union");
 /// assert_eq!(issue.from, 10);
@@ -63,7 +63,7 @@ pub struct Issue {
 impl Issue {
     /// Create a new issue with the given code and message.
     pub fn new<C: Into<String>, M: Into<String>, O: Into<String>>(
-        kind: IssueSeverity,
+        severity: IssueSeverity,
         code: C,
         message: M,
         origin: O,
@@ -71,7 +71,7 @@ impl Issue {
         to: usize,
     ) -> Self {
         Self {
-            kind,
+            severity,
             code: code.into(),
             message: message.into(),
             origin: origin.into(),
@@ -93,7 +93,7 @@ impl Issue {
     ///
     /// let issue = Issue::error("0003", "...", "main.ara", 10, 11);
     ///
-    /// assert_eq!(issue.kind, IssueSeverity::Error);
+    /// assert_eq!(issue.severity, IssueSeverity::Error);
     /// ```
     pub fn error<C: Into<String>, M: Into<String>, O: Into<String>>(
         code: C,
@@ -115,7 +115,7 @@ impl Issue {
     ///
     /// let issue = Issue::warning("0003", "...", "main.ara", 10, 11);
     ///
-    /// assert_eq!(issue.kind, IssueSeverity::Warning);
+    /// assert_eq!(issue.severity, IssueSeverity::Warning);
     /// ```
     pub fn warning<C: Into<String>, M: Into<String>, O: Into<String>>(
         code: C,
@@ -137,7 +137,7 @@ impl Issue {
     ///
     /// let issue = Issue::help("0003", "...", "main.ara", 10, 11);
     ///
-    /// assert_eq!(issue.kind, IssueSeverity::Help);
+    /// assert_eq!(issue.severity, IssueSeverity::Help);
     /// ```
     pub fn help<C: Into<String>, M: Into<String>, O: Into<String>>(
         code: C,
@@ -159,7 +159,7 @@ impl Issue {
     ///
     /// let issue = Issue::note("0003", "...", "main.ara", 10, 11);
     ///
-    /// assert_eq!(issue.kind, IssueSeverity::Note);
+    /// assert_eq!(issue.severity, IssueSeverity::Note);
     /// ```
     pub fn note<C: Into<String>, M: Into<String>, O: Into<String>>(
         code: C,
@@ -181,7 +181,7 @@ impl Issue {
     ///
     /// let issue = Issue::bug("0003", "...", "main.ara", 10, 11);
     ///
-    /// assert_eq!(issue.kind, IssueSeverity::Bug);
+    /// assert_eq!(issue.severity, IssueSeverity::Bug);
     /// ```
     pub fn bug<C: Into<String>, M: Into<String>, O: Into<String>>(
         code: C,
@@ -256,7 +256,7 @@ impl std::fmt::Display for Issue {
         write!(
             f,
             "{}[{}]: {} at {}@{}:{}",
-            self.kind, self.code, self.message, self.origin, self.from, self.to
+            self.severity, self.code, self.message, self.origin, self.from, self.to
         )
     }
 }

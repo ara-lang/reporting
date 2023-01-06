@@ -198,7 +198,7 @@ impl ReportBuilder<'_> {
         }
 
         for issue in &self.report.issues {
-            let mut diagnostic = match issue.kind {
+            let mut diagnostic = match issue.severity {
                 IssueSeverity::Error => Diagnostic::error(),
                 IssueSeverity::Warning => Diagnostic::warning(),
                 IssueSeverity::Note => Diagnostic::note(),
