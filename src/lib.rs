@@ -70,6 +70,8 @@ impl Report {
     /// use ara_reporting::issue::Issue;
     /// use ara_reporting::issue::IssueSeverity;
     ///
+    /// let empty_report = Report::new();
+    ///
     /// let first_report = Report::new()
     ///     .with_issue(Issue::help("0001", "...", "main.ara", 10, 11))
     ///     .with_issue(Issue::warning("0002", "...", "some_file.ara", 9, 10))
@@ -88,18 +90,13 @@ impl Report {
     ///     .with_issue(Issue::bug("0003", "...", "main.ara", 10, 11))
     /// ;
     ///
-    /// assert_eq!(first_report.severity(), IssueSeverity::Warning);
-    /// assert_eq!(second_report.severity(), IssueSeverity::Error);
-    /// assert_eq!(third_report.severity(), IssueSeverity::Note);
+    /// assert_eq!(empty_report.severity(), None);
+    /// assert_eq!(first_report.severity().unwrap(), IssueSeverity::Warning);
+    /// assert_eq!(second_report.severity().unwrap(), IssueSeverity::Error);
+    /// assert_eq!(third_report.severity().unwrap(), IssueSeverity::Note);
     /// ```
-    pub fn severity(&self) -> IssueSeverity {
-        let mut highest = IssueSeverity::Bug;
-        for issue in &self.issues {
-            if highest > issue.severity {
-                highest = issue.severity.clone();
-            }
-        }
-        highest
+    pub fn severity(&self) -> Option<IssueSeverity> {
+        self.issues.iter().map(|issue| issue.severity).max()
     }
 }
 
