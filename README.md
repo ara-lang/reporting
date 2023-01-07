@@ -16,7 +16,7 @@ Add `ara_reporting` to your `Cargo.toml`, and you're good to go!
 
 ```toml
 [dependencies]
-ara_reporting = "0.4.2"
+ara_reporting = "0.5.0"
 ```
 
 ## Example
