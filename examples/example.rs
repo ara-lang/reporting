@@ -35,7 +35,7 @@ function main(): int|string {
         .with_issue(
             Issue::error("E123", "some error here", DEFAULT_NAME, 35, 41)
                 .with_annotation(
-                    Annotation::new(DEFAULT_NAME, 39, 40).with_message("an annotation"),
+                    Annotation::secondary(DEFAULT_NAME, 39, 40).with_message("an annotation"),
                 )
                 .with_help("this is a help")
                 .with_note("this is a note"),
@@ -43,7 +43,7 @@ function main(): int|string {
         .with_issue(
             Issue::warning("W123", "some warning here", DEFAULT_NAME, 29, 187)
                 .with_annotation(
-                    Annotation::new(DEFAULT_NAME, 126, 127).with_message("an annotation"),
+                    Annotation::secondary(DEFAULT_NAME, 126, 127).with_message("an annotation"),
                 )
                 .with_help("this is a help")
                 .with_note("this is a note"),
@@ -51,13 +51,14 @@ function main(): int|string {
         .with_issue(
             Issue::note("N123", "some note here", DEFAULT_NAME, 84, 163)
                 .with_annotation(
-                    Annotation::new(DEFAULT_NAME, 105, 112).with_message("an annotation"),
+                    Annotation::secondary(DEFAULT_NAME, 105, 112).with_message("an annotation"),
                 )
                 .with_annotation(
-                    Annotation::new(DEFAULT_NAME, 121, 128).with_message("another annotation"),
+                    Annotation::secondary(DEFAULT_NAME, 121, 128)
+                        .with_message("another annotation"),
                 )
                 .with_annotation(
-                    Annotation::new(DEFAULT_NAME, 137, 147).with_message("and another"),
+                    Annotation::secondary(DEFAULT_NAME, 137, 147).with_message("and another"),
                 )
                 .with_help("this is a help")
                 .with_note("this is a note"),
@@ -65,7 +66,7 @@ function main(): int|string {
         .with_issue(
             Issue::help("H123", "some help here", DEFAULT_NAME, 137, 147)
                 .with_annotation(
-                    Annotation::new(DEFAULT_NAME, 35, 42).with_message("an annotation"),
+                    Annotation::secondary(DEFAULT_NAME, 35, 42).with_message("an annotation"),
                 )
                 .with_help("this is a help")
                 .with_note("this is a note"),
@@ -79,15 +80,15 @@ function main(): int|string {
                 163,
             )
             .with_annotation(
-                Annotation::new(DEFAULT_NAME, 110, 111)
+                Annotation::secondary(DEFAULT_NAME, 110, 111)
                     .with_message("this is found to be of type `{int}`"),
             )
             .with_annotation(
-                Annotation::new(DEFAULT_NAME, 126, 127)
+                Annotation::secondary(DEFAULT_NAME, 126, 127)
                     .with_message("this is found to be of type `{int}`"),
             )
             .with_annotation(
-                Annotation::new(DEFAULT_NAME, 148, 156)
+                Annotation::secondary(DEFAULT_NAME, 148, 156)
                     .with_message("expected `{int}`, found `{string}`"),
             )
             .with_note("for more information about this error, try `ara --explain E0308`"),

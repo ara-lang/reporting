@@ -212,8 +212,7 @@ impl ReportBuilder<'_> {
                 .with_labels(vec![Label::primary(
                     *ids.get(&issue.origin).unwrap_or(&0),
                     issue.from..issue.to,
-                )
-                .with_message(&issue.message)]);
+                )]);
 
             if let Some(note) = &issue.note {
                 diagnostic = diagnostic.with_notes(vec![format!("note: {}", note)]);
