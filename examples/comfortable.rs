@@ -1,6 +1,7 @@
 use ara_reporting::annotation::Annotation;
 use ara_reporting::builder::CharSet;
 use ara_reporting::builder::ColorChoice;
+use ara_reporting::builder::DisplayStyle;
 use ara_reporting::builder::ReportBuilder;
 use ara_reporting::error::Error;
 use ara_reporting::issue::Issue;
@@ -59,8 +60,9 @@ function add(int $a, int $b): int {
     );
 
     let builder = ReportBuilder::new(&map, report)
+        .with_charset(CharSet::Unicode)
         .with_colors(ColorChoice::Always)
-        .with_charset(CharSet::Unicode);
+        .with_style(DisplayStyle::Comfortable);
 
     builder.print()
 }
