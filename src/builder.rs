@@ -18,7 +18,7 @@ use crate::issue::IssueSeverity;
 use crate::Report;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
-pub enum Charset {
+pub enum CharSet {
     Ascii,
     Unicode,
 }
@@ -35,7 +35,7 @@ pub struct ReportBuilder<'a> {
     pub source_map: &'a SourceMap,
     pub report: Report,
     pub colors: ColorChoice,
-    pub charset: Charset,
+    pub charset: CharSet,
 }
 
 /// A report builder.
@@ -67,7 +67,7 @@ impl ReportBuilder<'_> {
             source_map,
             report,
             colors: ColorChoice::Auto,
-            charset: Charset::Ascii,
+            charset: CharSet::Ascii,
         }
     }
 
@@ -112,7 +112,7 @@ impl ReportBuilder<'_> {
     /// # use ara_source::source::SourceKind;
     /// # use ara_source::SourceMap;
     /// # use ara_reporting::builder::ReportBuilder;
-    /// # use ara_reporting::builder::Charset;
+    /// # use ara_reporting::builder::CharSet;
     /// # use ara_reporting::Report;
     /// # let report = Report::new();
     /// # let source = SourceMap::new(vec![
@@ -120,13 +120,13 @@ impl ReportBuilder<'_> {
     /// # ]);
     /// # let builder = ReportBuilder::new(&source, report);
     ///
-    /// let builder = builder.with_charset(Charset::Ascii);
-    /// assert_eq!(builder.charset, Charset::Ascii);
+    /// let builder = builder.with_charset(CharSet::Ascii);
+    /// assert_eq!(builder.charset, CharSet::Ascii);
     ///
-    /// let builder = builder.with_charset(Charset::Unicode);
-    /// assert_eq!(builder.charset, Charset::Unicode);
+    /// let builder = builder.with_charset(CharSet::Unicode);
+    /// assert_eq!(builder.charset, CharSet::Unicode);
     /// ```
-    pub fn with_charset(mut self, charset: Charset) -> Self {
+    pub fn with_charset(mut self, charset: CharSet) -> Self {
         self.charset = charset;
 
         self
@@ -136,8 +136,8 @@ impl ReportBuilder<'_> {
     pub fn print(&self) -> Result<(), Error> {
         let mut writer = StandardStream::stdout(match self.colors {
             ColorChoice::Always => match self.charset {
-                Charset::Ascii => TermColorChoice::AlwaysAnsi,
-                Charset::Unicode => TermColorChoice::Always,
+                CharSet::Ascii => TermColorChoice::AlwaysAnsi,
+                CharSet::Unicode => TermColorChoice::Always,
             },
             ColorChoice::Auto => TermColorChoice::Auto,
             ColorChoice::Never => TermColorChoice::Never,
@@ -150,8 +150,8 @@ impl ReportBuilder<'_> {
     pub fn eprint(&self) -> Result<(), Error> {
         let mut writer = StandardStream::stderr(match self.colors {
             ColorChoice::Always => match self.charset {
-                Charset::Ascii => TermColorChoice::AlwaysAnsi,
-                Charset::Unicode => TermColorChoice::Always,
+                CharSet::Ascii => TermColorChoice::AlwaysAnsi,
+                CharSet::Unicode => TermColorChoice::Always,
             },
             ColorChoice::Auto => TermColorChoice::Auto,
             ColorChoice::Never => TermColorChoice::Never,
@@ -164,8 +164,8 @@ impl ReportBuilder<'_> {
     pub fn as_string(&self) -> Result<String, Error> {
         let buffer = BufferWriter::stderr(match self.colors {
             ColorChoice::Always => match self.charset {
-                Charset::Ascii => TermColorChoice::AlwaysAnsi,
-                Charset::Unicode => TermColorChoice::Always,
+                CharSet::Ascii => TermColorChoice::AlwaysAnsi,
+                CharSet::Unicode => TermColorChoice::Always,
             },
             ColorChoice::Auto => TermColorChoice::Auto,
             ColorChoice::Never => TermColorChoice::Never,
@@ -182,8 +182,8 @@ impl ReportBuilder<'_> {
     pub fn write<T: WriteColor>(&self, mut w: T) -> Result<(), Error> {
         let config = Config {
             chars: match self.charset {
-                Charset::Ascii => Chars::ascii(),
-                Charset::Unicode => Chars::box_drawing(),
+                CharSet::Ascii => Chars::ascii(),
+                CharSet::Unicode => Chars::box_drawing(),
             },
             ..Default::default()
         };
