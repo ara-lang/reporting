@@ -26,8 +26,7 @@ pub struct Issue {
     pub from: usize,
     pub to: usize,
     pub annotations: Vec<Annotation>,
-    pub note: Option<String>,
-    pub help: Option<String>,
+    pub notes: Vec<String>,
 }
 
 /// A report issue.
@@ -37,30 +36,30 @@ pub struct Issue {
 /// Example:
 ///
 /// ```rust
-/// use ara_reporting::issue::Issue;
-/// use ara_reporting::issue::IssueSeverity;
-/// use ara_reporting::annotation::Annotation;
-///
+/// # use ara_reporting::issue::Issue;
+/// # use ara_reporting::issue::IssueSeverity;
+/// # use ara_reporting::annotation::Annotation;
 /// let issue = Issue::error("0003", "standalone type `void` cannot be part of a union", "main.ara", 10, 14)
 ///     .with_annotation(
 ///         Annotation::secondary("main.ara", 9, 10)
 ///             .with_message("union type starts here")
 ///     )
 ///    .with_note("`void`, `never`, and `mixed` are standalone types and cannot be part of a union, or an intersection")
-///    .with_help("consider using `null` instead of `void`")
+///    .with_note("consider using `null` instead of `void`")
 /// ;
-///
-/// assert_eq!(issue.severity, IssueSeverity::Error);
-/// assert_eq!(issue.code, "0003");
-/// assert_eq!(issue.message, "standalone type `void` cannot be part of a union");
-/// assert_eq!(issue.from, 10);
-/// assert_eq!(issue.to, 14);
-/// assert_eq!(issue.annotations.len(), 1);
-/// assert_eq!(issue.annotations[0].from, 9);
-/// assert_eq!(issue.annotations[0].to, 10);
-/// assert_eq!(issue.annotations[0].message, Some("union type starts here".to_string()));
-/// assert_eq!(issue.note, Some("`void`, `never`, and `mixed` are standalone types and cannot be part of a union, or an intersection".to_string()));
-/// assert_eq!(issue.help, Some("consider using `null` instead of `void`".to_string()));
+/// # assert_eq!(issue.severity, IssueSeverity::Error);
+/// # assert_eq!(issue.code, "0003");
+/// # assert_eq!(issue.message, "standalone type `void` cannot be part of a union");
+/// # assert_eq!(issue.from, 10);
+/// # assert_eq!(issue.to, 14);
+/// # assert_eq!(issue.annotations.len(), 1);
+/// # assert_eq!(issue.annotations[0].from, 9);
+/// # assert_eq!(issue.annotations[0].to, 10);
+/// # assert_eq!(issue.annotations[0].message, Some("union type starts here".to_string()));
+/// # assert_eq!(issue.notes, vec![
+/// #     "`void`, `never`, and `mixed` are standalone types and cannot be part of a union, or an intersection".to_string(),
+/// #    "consider using `null` instead of `void`".to_string(),
+/// # ]);
 /// ```
 impl Issue {
     /// Create a new issue with the given code and message.
@@ -80,8 +79,7 @@ impl Issue {
             from,
             to,
             annotations: Vec::new(),
-            note: None,
-            help: None,
+            notes: Vec::new(),
         }
     }
 
@@ -204,14 +202,7 @@ impl Issue {
 
     /// Add a note to this issue.
     pub fn with_note<S: Into<String>>(mut self, note: S) -> Self {
-        self.note = Some(note.into());
-
-        self
-    }
-
-    /// Add a help message to this issue.
-    pub fn with_help<S: Into<String>>(mut self, help: S) -> Self {
-        self.help = Some(help.into());
+        self.notes.push(note.into());
 
         self
     }

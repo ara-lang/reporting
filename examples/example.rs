@@ -35,9 +35,8 @@ function main(): int|string {
         .with_issue(
             Issue::error("E123", "some error here", DEFAULT_NAME, 35, 41)
                 .with_annotation(
-                    Annotation::secondary(DEFAULT_NAME, 39, 40).with_message("an annotation"),
+                    Annotation::secondary(DEFAULT_NAME, 41, 42).with_message("an annotation"),
                 )
-                .with_help("this is a help")
                 .with_note("this is a note"),
         )
         .with_issue(
@@ -45,7 +44,6 @@ function main(): int|string {
                 .with_annotation(
                     Annotation::secondary(DEFAULT_NAME, 126, 127).with_message("an annotation"),
                 )
-                .with_help("this is a help")
                 .with_note("this is a note"),
         )
         .with_issue(
@@ -60,7 +58,6 @@ function main(): int|string {
                 .with_annotation(
                     Annotation::secondary(DEFAULT_NAME, 137, 147).with_message("and another"),
                 )
-                .with_help("this is a help")
                 .with_note("this is a note"),
         )
         .with_issue(
@@ -68,7 +65,6 @@ function main(): int|string {
                 .with_annotation(
                     Annotation::secondary(DEFAULT_NAME, 35, 42).with_message("an annotation"),
                 )
-                .with_help("this is a help")
                 .with_note("this is a note"),
         )
         .with_issue(
