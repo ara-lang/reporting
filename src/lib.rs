@@ -12,8 +12,17 @@ pub mod issue;
 
 #[derive(Debug, PartialEq, Eq, Clone, Deserialize, Serialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
+pub struct ReportFooter {
+    pub message: String,
+    pub help: Option<String>,
+    pub note: Option<String>,
+}
+
+#[derive(Debug, PartialEq, Eq, Clone, Deserialize, Serialize, JsonSchema)]
+#[serde(rename_all = "snake_case")]
 pub struct Report {
     pub issues: Vec<Issue>,
+    pub footer: Option<ReportFooter>,
 }
 
 /// A report.
@@ -24,16 +33,21 @@ pub struct Report {
 ///
 /// ```rust
 /// use ara_reporting::Report;
+/// use ara_reporting::ReportFooter;
 /// use ara_reporting::issue::Issue;
 /// use ara_reporting::issue::IssueSeverity;
-///
 ///
 /// let report = Report::new()
 ///     .with_issue(Issue::error("0003", "standalone type `void` cannot be part of a union", "main.ara", 10, 14))
 ///     .with_issue(Issue::warning("0023", "...", "some_file.ara", 9, 10))
-/// ;
+///     .with_footer(ReportFooter::new("This is a report message"));
 ///
 /// assert_eq!(report.issues.len(), 2);
+///
+/// let footer = report.footer.unwrap();
+/// assert_eq!(footer.message, "This is a report message");
+/// assert_eq!(footer.help, None);
+/// assert_eq!(footer.note, None);
 ///
 /// assert_eq!(report.issues[0].severity, IssueSeverity::Error);
 /// assert_eq!(report.issues[0].code, "0003");
@@ -52,12 +66,21 @@ pub struct Report {
 impl Report {
     /// Create a new report.
     pub fn new() -> Self {
-        Self { issues: vec![] }
+        Self {
+            issues: vec![],
+            footer: None,
+        }
     }
 
     /// Add an issue to this report.
     pub fn with_issue(mut self, issue: Issue) -> Self {
         self.issues.push(issue);
+        self
+    }
+
+    /// Add a footer to this report.
+    pub fn with_footer(mut self, footer: ReportFooter) -> Self {
+        self.footer = Some(footer);
         self
     }
 
@@ -118,6 +141,31 @@ impl std::fmt::Display for Report {
 
 impl From<Issue> for Report {
     fn from(val: Issue) -> Self {
-        Report { issues: vec![val] }
+        Report {
+            issues: vec![val],
+            footer: None,
+        }
+    }
+}
+
+impl ReportFooter {
+    pub fn new<M: Into<String>>(message: M) -> Self {
+        Self {
+            message: message.into(),
+            help: None,
+            note: None,
+        }
+    }
+
+    pub fn with_help<S: Into<String>>(mut self, help: S) -> Self {
+        self.help = Some(help.into());
+
+        self
+    }
+
+    pub fn with_note<S: Into<String>>(mut self, note: S) -> Self {
+        self.note = Some(note.into());
+
+        self
     }
 }

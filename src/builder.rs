@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
-use codespan_reporting::diagnostic::{Diagnostic, Label};
+use codespan_reporting::diagnostic::Diagnostic;
+use codespan_reporting::diagnostic::Label;
 use codespan_reporting::files::Error as CodespanError;
 use codespan_reporting::files::SimpleFiles;
 use codespan_reporting::term::emit;
@@ -198,13 +199,7 @@ impl ReportBuilder<'_> {
         }
 
         for issue in &self.report.issues {
-            let mut diagnostic = match issue.severity {
-                IssueSeverity::Error => Diagnostic::error(),
-                IssueSeverity::Warning => Diagnostic::warning(),
-                IssueSeverity::Note => Diagnostic::note(),
-                IssueSeverity::Help => Diagnostic::help(),
-                IssueSeverity::Bug => Diagnostic::bug(),
-            };
+            let mut diagnostic: Diagnostic<usize> = issue.severity.into();
 
             diagnostic = diagnostic
                 .with_code(&issue.code)
@@ -263,6 +258,36 @@ impl ReportBuilder<'_> {
             }
         }
 
+        if let Some(footer) = &self.report.footer {
+            let severity = self.report.severity().unwrap_or(IssueSeverity::Error);
+
+            let mut diagnostic: Diagnostic<usize> = severity.into();
+
+            diagnostic = diagnostic.with_message(&footer.message);
+
+            if let Some(note) = &footer.note {
+                diagnostic = diagnostic.with_notes(vec![format!("note: {}", note)]);
+            }
+
+            if let Some(help) = &footer.help {
+                diagnostic = diagnostic.with_notes(vec![format!("help: {}", help)]);
+            }
+
+            emit(&mut w, &config, &files, &diagnostic).ok();
+        }
+
         Ok(())
+    }
+}
+
+impl From<IssueSeverity> for Diagnostic<usize> {
+    fn from(severity: IssueSeverity) -> Self {
+        match severity {
+            IssueSeverity::Error => Diagnostic::error(),
+            IssueSeverity::Warning => Diagnostic::warning(),
+            IssueSeverity::Note => Diagnostic::note(),
+            IssueSeverity::Help => Diagnostic::help(),
+            IssueSeverity::Bug => Diagnostic::bug(),
+        }
     }
 }
