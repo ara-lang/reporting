@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
-use codespan_reporting::diagnostic::{Diagnostic, Label};
+use codespan_reporting::diagnostic::Diagnostic;
+use codespan_reporting::diagnostic::Label;
 use codespan_reporting::files::Error as CodespanError;
 use codespan_reporting::files::SimpleFiles;
 use codespan_reporting::term::emit;
