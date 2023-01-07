@@ -14,8 +14,7 @@ pub mod issue;
 #[serde(rename_all = "snake_case")]
 pub struct ReportFooter {
     pub message: String,
-    pub help: Option<String>,
-    pub note: Option<String>,
+    pub notes: Vec<String>,
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Deserialize, Serialize, JsonSchema)]
@@ -42,26 +41,22 @@ pub struct Report {
 ///     .with_issue(Issue::warning("0023", "...", "some_file.ara", 9, 10))
 ///     .with_footer(ReportFooter::new("This is a report message"));
 ///
-/// assert_eq!(report.issues.len(), 2);
-///
-/// let footer = report.footer.unwrap();
-/// assert_eq!(footer.message, "This is a report message");
-/// assert_eq!(footer.help, None);
-/// assert_eq!(footer.note, None);
-///
-/// assert_eq!(report.issues[0].severity, IssueSeverity::Error);
-/// assert_eq!(report.issues[0].code, "0003");
-/// assert_eq!(report.issues[0].message, "standalone type `void` cannot be part of a union");
-/// assert_eq!(report.issues[0].origin, "main.ara");
-/// assert_eq!(report.issues[0].from, 10);
-/// assert_eq!(report.issues[0].to, 14);
-///
-/// assert_eq!(report.issues[1].severity, IssueSeverity::Warning);
-/// assert_eq!(report.issues[1].code, "0023");
-/// assert_eq!(report.issues[1].message, "...");
-/// assert_eq!(report.issues[1].origin, "some_file.ara");
-/// assert_eq!(report.issues[1].from, 9);
-/// assert_eq!(report.issues[1].to, 10);
+/// # assert_eq!(report.issues.len(), 2);
+/// # let footer = report.footer.unwrap();
+/// # assert_eq!(footer.message, "This is a report message");
+/// # assert!(footer.notes.is_empty());
+/// # assert_eq!(report.issues[0].severity, IssueSeverity::Error);
+/// # assert_eq!(report.issues[0].code, "0003");
+/// # assert_eq!(report.issues[0].message, "standalone type `void` cannot be part of a union");
+/// # assert_eq!(report.issues[0].origin, "main.ara");
+/// # assert_eq!(report.issues[0].from, 10);
+/// # assert_eq!(report.issues[0].to, 14);
+/// # assert_eq!(report.issues[1].severity, IssueSeverity::Warning);
+/// # assert_eq!(report.issues[1].code, "0023");
+/// # assert_eq!(report.issues[1].message, "...");
+/// # assert_eq!(report.issues[1].origin, "some_file.ara");
+/// # assert_eq!(report.issues[1].from, 9);
+/// # assert_eq!(report.issues[1].to, 10);
 /// ```
 impl Report {
     /// Create a new report.
@@ -156,21 +151,13 @@ impl ReportFooter {
     pub fn new<M: Into<String>>(message: M) -> Self {
         Self {
             message: message.into(),
-            help: None,
-            note: None,
+            notes: vec![],
         }
-    }
-
-    /// Add a help message to this footer.
-    pub fn with_help<S: Into<String>>(mut self, help: S) -> Self {
-        self.help = Some(help.into());
-
-        self
     }
 
     /// Add a note to this footer.
     pub fn with_note<S: Into<String>>(mut self, note: S) -> Self {
-        self.note = Some(note.into());
+        self.notes.push(note.into());
 
         self
     }

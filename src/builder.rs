@@ -10,6 +10,7 @@ use codespan_reporting::term::Config;
 use codespan_reporting::term::DisplayStyle as CodespanDisplayStyle;
 use codespan_reporting::term::Styles;
 use termcolor::BufferWriter;
+use termcolor::Color;
 use termcolor::ColorChoice as TermColorChoice;
 use termcolor::StandardStream;
 use termcolor::WriteColor;
@@ -221,11 +222,9 @@ impl ReportBuilder<'_> {
     pub fn write<T: WriteColor>(&self, mut w: T) -> Result<(), Error> {
         let mut styles = Styles::default();
 
-        styles
-            .secondary_label
-            .set_bold(true)
-            .set_intense(true)
-            .set_dimmed(false);
+        styles.secondary_label.set_bold(true);
+        styles.line_number.set_fg(Some(Color::Ansi256(8)));
+        styles.source_border.set_fg(Some(Color::Ansi256(8)));
 
         let config = Config {
             display_style: match self.style {
@@ -239,8 +238,8 @@ impl ReportBuilder<'_> {
             },
             tab_width: 2,
             styles,
-            start_context_lines: 3,
-            end_context_lines: 3,
+            start_context_lines: 1,
+            end_context_lines: 1,
         };
 
         let mut files = SimpleFiles::new();
@@ -253,42 +252,32 @@ impl ReportBuilder<'_> {
         }
 
         for issue in &self.report.issues {
-            let mut diagnostic: Diagnostic<usize> = issue.severity.into();
-
-            diagnostic = diagnostic
+            let diagnostic = Into::<Diagnostic<usize>>::into(issue.severity)
                 .with_code(&issue.code)
                 .with_message(&issue.message)
                 .with_labels(vec![Label::primary(
                     *ids.get(&issue.origin).unwrap_or(&0),
                     issue.from..issue.to,
-                )]);
+                )])
+                .with_notes(issue.notes.clone())
+                .with_labels(
+                    issue
+                        .annotations
+                        .iter()
+                        .map(|annotation| {
+                            let mut label = Label::secondary(
+                                *ids.get(&annotation.origin).unwrap_or(&0),
+                                annotation.from..annotation.to,
+                            );
 
-            if let Some(note) = &issue.note {
-                diagnostic = diagnostic.with_notes(vec![format!("note: {}", note)]);
-            }
+                            if let Some(message) = &annotation.message {
+                                label = label.with_message(message);
+                            }
 
-            if let Some(help) = &issue.help {
-                diagnostic = diagnostic.with_notes(vec![format!("help: {}", help)]);
-            }
-
-            diagnostic = diagnostic.with_labels(
-                issue
-                    .annotations
-                    .iter()
-                    .map(|annotation| {
-                        let mut label = Label::secondary(
-                            *ids.get(&annotation.origin).unwrap_or(&0),
-                            annotation.from..annotation.to,
-                        );
-
-                        if let Some(message) = &annotation.message {
-                            label = label.with_message(message);
-                        }
-
-                        label
-                    })
-                    .collect(),
-            );
+                            label
+                        })
+                        .collect(),
+                );
 
             match emit(&mut w, &config, &files, &diagnostic) {
                 Ok(_) => (),
@@ -313,19 +302,11 @@ impl ReportBuilder<'_> {
         }
 
         if let Some(footer) = &self.report.footer {
-            let severity = self.report.severity().unwrap_or(IssueSeverity::Error);
-
-            let mut diagnostic: Diagnostic<usize> = severity.into();
-
-            diagnostic = diagnostic.with_message(&footer.message);
-
-            if let Some(note) = &footer.note {
-                diagnostic = diagnostic.with_notes(vec![format!("note: {}", note)]);
-            }
-
-            if let Some(help) = &footer.help {
-                diagnostic = diagnostic.with_notes(vec![format!("help: {}", help)]);
-            }
+            let diagnostic: Diagnostic<usize> = Into::<Diagnostic<usize>>::into(
+                self.report.severity().unwrap_or(IssueSeverity::Error),
+            )
+            .with_message(&footer.message)
+            .with_notes(footer.notes.clone());
 
             emit(&mut w, &config, &files, &diagnostic).ok();
         }

@@ -46,9 +46,8 @@ $b = match $a {
             .with_note("for more information about this error, try `ara --explain E0417`"),
         )
         .with_footer(
-            ReportFooter::new("This is a report message")
-                .with_help("This is a help message")
-                .with_note("This is a note message"),
+            ReportFooter::new("this is a report footer message")
+                .with_note("this is a note message"),
         );
 
     let builder = ReportBuilder::new(&map, report)
