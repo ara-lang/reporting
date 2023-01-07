@@ -264,6 +264,12 @@ impl ReportBuilder<'_> {
             }
         }
 
+        if let Some(message) = &self.report.message {
+            let diagnostic = Diagnostic::note().with_message(message);
+
+            emit(&mut w, &config, &files, &diagnostic).ok();
+        }
+
         Ok(())
     }
 }

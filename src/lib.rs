@@ -14,6 +14,7 @@ pub mod issue;
 #[serde(rename_all = "snake_case")]
 pub struct Report {
     pub issues: Vec<Issue>,
+    pub message: Option<String>,
 }
 
 /// A report.
@@ -27,13 +28,13 @@ pub struct Report {
 /// use ara_reporting::issue::Issue;
 /// use ara_reporting::issue::IssueSeverity;
 ///
-///
 /// let report = Report::new()
 ///     .with_issue(Issue::error("0003", "standalone type `void` cannot be part of a union", "main.ara", 10, 14))
 ///     .with_issue(Issue::warning("0023", "...", "some_file.ara", 9, 10))
-/// ;
+///     .with_message("This is a report message");
 ///
 /// assert_eq!(report.issues.len(), 2);
+/// assert_eq!(report.message, Some("This is a report message".to_string()));
 ///
 /// assert_eq!(report.issues[0].severity, IssueSeverity::Error);
 /// assert_eq!(report.issues[0].code, "0003");
@@ -52,12 +53,22 @@ pub struct Report {
 impl Report {
     /// Create a new report.
     pub fn new() -> Self {
-        Self { issues: vec![] }
+        Self {
+            issues: vec![],
+            message: None,
+        }
     }
 
     /// Add an issue to this report.
     pub fn with_issue(mut self, issue: Issue) -> Self {
         self.issues.push(issue);
+        self
+    }
+
+    /// Add a message to this report.
+    pub fn with_message<S: Into<String>>(mut self, message: S) -> Self {
+        self.message = Some(message.into());
+
         self
     }
 
@@ -118,6 +129,9 @@ impl std::fmt::Display for Report {
 
 impl From<Issue> for Report {
     fn from(val: Issue) -> Self {
-        Report { issues: vec![val] }
+        Report {
+            issues: vec![val],
+            message: None,
+        }
     }
 }
