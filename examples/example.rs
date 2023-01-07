@@ -1,5 +1,5 @@
 use ara_reporting::annotation::Annotation;
-use ara_reporting::builder::Charset;
+use ara_reporting::builder::CharSet;
 use ara_reporting::builder::ColorChoice;
 use ara_reporting::builder::ReportBuilder;
 use ara_reporting::error::Error;
@@ -96,7 +96,7 @@ function main(): int|string {
 
     let builder = ReportBuilder::new(&map, report)
         .with_colors(ColorChoice::Always)
-        .with_charset(Charset::Unicode);
+        .with_charset(CharSet::Unicode);
 
     builder.print()
 }
