@@ -198,13 +198,7 @@ impl ReportBuilder<'_> {
         }
 
         for issue in &self.report.issues {
-            let mut diagnostic = match issue.severity {
-                IssueSeverity::Error => Diagnostic::error(),
-                IssueSeverity::Warning => Diagnostic::warning(),
-                IssueSeverity::Note => Diagnostic::note(),
-                IssueSeverity::Help => Diagnostic::help(),
-                IssueSeverity::Bug => Diagnostic::bug(),
-            };
+            let mut diagnostic: Diagnostic<usize> = issue.severity.into();
 
             diagnostic = diagnostic
                 .with_code(&issue.code)
@@ -264,11 +258,26 @@ impl ReportBuilder<'_> {
         }
 
         if let Some(message) = &self.report.message {
-            let diagnostic = Diagnostic::note().with_message(message);
+            let severity = self.report.severity().unwrap_or(IssueSeverity::Error);
+
+            let mut diagnostic: Diagnostic<usize> = severity.into();
+            diagnostic = diagnostic.with_message(message);
 
             emit(&mut w, &config, &files, &diagnostic).ok();
         }
 
         Ok(())
+    }
+}
+
+impl From<IssueSeverity> for Diagnostic<usize> {
+    fn from(severity: IssueSeverity) -> Self {
+        match severity {
+            IssueSeverity::Error => Diagnostic::error(),
+            IssueSeverity::Warning => Diagnostic::warning(),
+            IssueSeverity::Note => Diagnostic::note(),
+            IssueSeverity::Help => Diagnostic::help(),
+            IssueSeverity::Bug => Diagnostic::bug(),
+        }
     }
 }
