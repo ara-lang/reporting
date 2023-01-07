@@ -30,13 +30,16 @@ $b = match $a {
             67,
         )
         .with_annotation(
-            Annotation::new(origin, 26, 27).with_message("this is found to be of type `{int}`"),
+            Annotation::secondary(origin, 26, 27)
+                .with_message("this is found to be of type `{int}`"),
         )
         .with_annotation(
-            Annotation::new(origin, 38, 39).with_message("this is found to be of type `{int}`"),
+            Annotation::secondary(origin, 38, 39)
+                .with_message("this is found to be of type `{int}`"),
         )
         .with_annotation(
-            Annotation::new(origin, 56, 64).with_message("expected `{int}`, found `{string}`"),
+            Annotation::secondary(origin, 56, 64)
+                .with_message("expected `{int}`, found `{string}`"),
         )
         .with_note("for more information about this error, try `ara --explain E0417`"),
     );

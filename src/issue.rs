@@ -43,7 +43,7 @@ pub struct Issue {
 ///
 /// let issue = Issue::error("0003", "standalone type `void` cannot be part of a union", "main.ara", 10, 14)
 ///     .with_annotation(
-///         Annotation::new("main.ara", 9, 10)
+///         Annotation::secondary("main.ara", 9, 10)
 ///             .with_message("union type starts here")
 ///     )
 ///    .with_note("`void`, `never`, and `mixed` are standalone types and cannot be part of a union, or an intersection")
