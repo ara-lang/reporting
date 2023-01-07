@@ -3,6 +3,7 @@ use serde::Deserialize;
 use serde::Serialize;
 
 use crate::issue::Issue;
+use crate::issue::IssueSeverity;
 
 pub mod annotation;
 pub mod builder;
@@ -58,6 +59,44 @@ impl Report {
     pub fn with_issue(mut self, issue: Issue) -> Self {
         self.issues.push(issue);
         self
+    }
+
+    /// Returns the highest severity of all issues in this report.
+    ///
+    /// Example:
+    ///
+    /// ```rust
+    /// use ara_reporting::Report;
+    /// use ara_reporting::issue::Issue;
+    /// use ara_reporting::issue::IssueSeverity;
+    ///
+    /// let empty_report = Report::new();
+    ///
+    /// let first_report = Report::new()
+    ///     .with_issue(Issue::help("0001", "...", "main.ara", 10, 11))
+    ///     .with_issue(Issue::warning("0002", "...", "some_file.ara", 9, 10))
+    ///     .with_issue(Issue::note("0003", "...", "main.ara", 10, 11))
+    /// ;
+    ///
+    /// let second_report = Report::new()
+    ///     .with_issue(Issue::warning("0001", "...", "some_file.ara", 9, 10))
+    ///     .with_issue(Issue::bug("0002", "...", "main.ara", 10, 11))
+    ///     .with_issue(Issue::error("0003", "...", "main.ara", 10, 11))
+    /// ;
+    ///
+    /// let third_report = Report::new()
+    ///     .with_issue(Issue::note("0001", "...", "main.ara", 10, 11))
+    ///     .with_issue(Issue::bug("0002", "...", "main.ara", 10, 11))
+    ///     .with_issue(Issue::bug("0003", "...", "main.ara", 10, 11))
+    /// ;
+    ///
+    /// assert_eq!(empty_report.severity(), None);
+    /// assert_eq!(first_report.severity().unwrap(), IssueSeverity::Warning);
+    /// assert_eq!(second_report.severity().unwrap(), IssueSeverity::Error);
+    /// assert_eq!(third_report.severity().unwrap(), IssueSeverity::Note);
+    /// ```
+    pub fn severity(&self) -> Option<IssueSeverity> {
+        self.issues.iter().map(|issue| issue.severity).max()
     }
 }
 
