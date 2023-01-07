@@ -148,7 +148,11 @@ impl From<Issue> for Report {
     }
 }
 
+/// A footer for a report.
+///
+/// A footer is a message that is displayed at the end of a report.
 impl ReportFooter {
+    /// Create a new footer.
     pub fn new<M: Into<String>>(message: M) -> Self {
         Self {
             message: message.into(),
@@ -157,12 +161,14 @@ impl ReportFooter {
         }
     }
 
+    /// Add a help message to this footer.
     pub fn with_help<S: Into<String>>(mut self, help: S) -> Self {
         self.help = Some(help.into());
 
         self
     }
 
+    /// Add a note to this footer.
     pub fn with_note<S: Into<String>>(mut self, note: S) -> Self {
         self.note = Some(note.into());
 

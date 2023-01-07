@@ -7,6 +7,8 @@ use codespan_reporting::files::SimpleFiles;
 use codespan_reporting::term::emit;
 use codespan_reporting::term::Chars;
 use codespan_reporting::term::Config;
+use codespan_reporting::term::DisplayStyle as CodespanDisplayStyle;
+use codespan_reporting::term::Styles;
 use termcolor::BufferWriter;
 use termcolor::ColorChoice as TermColorChoice;
 use termcolor::StandardStream;
@@ -31,12 +33,20 @@ pub enum ColorChoice {
     Never,
 }
 
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub enum DisplayStyle {
+    Default,
+    Comfortable,
+    Compact,
+}
+
 #[derive(Debug, Clone)]
 pub struct ReportBuilder<'a> {
     pub source_map: &'a SourceMap,
     pub report: Report,
     pub colors: ColorChoice,
     pub charset: CharSet,
+    pub style: DisplayStyle,
 }
 
 /// A report builder.
@@ -69,6 +79,7 @@ impl ReportBuilder<'_> {
             report,
             colors: ColorChoice::Auto,
             charset: CharSet::Ascii,
+            style: DisplayStyle::Default,
         }
     }
 
@@ -120,15 +131,42 @@ impl ReportBuilder<'_> {
     /// #     Source::inline(SourceKind::Script, "function main(): void {}"),
     /// # ]);
     /// # let builder = ReportBuilder::new(&source, report);
-    ///
     /// let builder = builder.with_charset(CharSet::Ascii);
-    /// assert_eq!(builder.charset, CharSet::Ascii);
-    ///
+    /// # assert_eq!(builder.charset, CharSet::Ascii);
     /// let builder = builder.with_charset(CharSet::Unicode);
-    /// assert_eq!(builder.charset, CharSet::Unicode);
+    /// # assert_eq!(builder.charset, CharSet::Unicode);
     /// ```
     pub fn with_charset(mut self, charset: CharSet) -> Self {
         self.charset = charset;
+
+        self
+    }
+
+    /// Set the display style
+    ///
+    /// Example:
+    ///
+    /// ```rust
+    /// # use ara_source::source::Source;
+    /// # use ara_source::source::SourceKind;
+    /// # use ara_source::SourceMap;
+    /// # use ara_reporting::builder::ReportBuilder;
+    /// # use ara_reporting::builder::DisplayStyle;
+    /// # use ara_reporting::Report;
+    /// # let report = Report::new();
+    /// # let source = SourceMap::new(vec![
+    /// #     Source::inline(SourceKind::Script, "function main(): void {}"),
+    /// # ]);
+    /// # let builder = ReportBuilder::new(&source, report);
+    /// let builder = builder.with_style(DisplayStyle::Default);
+    /// # assert_eq!(builder.style, DisplayStyle::Default);
+    /// let builder = builder.with_style(DisplayStyle::Comfortable);
+    /// # assert_eq!(builder.style, DisplayStyle::Comfortable);
+    /// let builder = builder.with_style(DisplayStyle::Compact);
+    /// # assert_eq!(builder.style, DisplayStyle::Compact);
+    /// ```
+    pub fn with_style(mut self, style: DisplayStyle) -> Self {
+        self.style = style;
 
         self
     }
@@ -181,12 +219,28 @@ impl ReportBuilder<'_> {
 
     /// Write the report to the given writer.
     pub fn write<T: WriteColor>(&self, mut w: T) -> Result<(), Error> {
+        let mut styles = Styles::default();
+
+        styles
+            .secondary_label
+            .set_bold(true)
+            .set_intense(true)
+            .set_dimmed(false);
+
         let config = Config {
+            display_style: match self.style {
+                DisplayStyle::Default => CodespanDisplayStyle::Rich,
+                DisplayStyle::Comfortable => CodespanDisplayStyle::Medium,
+                DisplayStyle::Compact => CodespanDisplayStyle::Short,
+            },
             chars: match self.charset {
                 CharSet::Ascii => Chars::ascii(),
                 CharSet::Unicode => Chars::box_drawing(),
             },
-            ..Default::default()
+            tab_width: 2,
+            styles,
+            start_context_lines: 3,
+            end_context_lines: 3,
         };
 
         let mut files = SimpleFiles::new();
