@@ -4,7 +4,7 @@ use serde::Serialize;
 
 use crate::annotation::Annotation;
 
-#[derive(Debug, PartialEq, Eq, Clone, Deserialize, Serialize, JsonSchema)]
+#[derive(Debug, PartialEq, Eq, Ord, Clone, PartialOrd, Deserialize, Serialize, JsonSchema)]
 #[serde(rename_all = "snake_case", tag = "type")]
 pub enum IssueSeverity {
     Error,
