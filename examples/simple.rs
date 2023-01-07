@@ -4,7 +4,7 @@ use ara_reporting::builder::ColorChoice;
 use ara_reporting::builder::ReportBuilder;
 use ara_reporting::error::Error;
 use ara_reporting::issue::Issue;
-use ara_reporting::Report;
+use ara_reporting::{Report, ReportFooter};
 use ara_source::source::Source;
 use ara_source::source::SourceKind;
 use ara_source::SourceMap;
@@ -44,7 +44,11 @@ $b = match $a {
             )
             .with_note("for more information about this error, try `ara --explain E0417`"),
         )
-        .with_message("This is a report message");
+        .with_footer(
+            ReportFooter::new("This is a report message")
+                .with_help("This is a help message")
+                .with_note("This is a note message"),
+        );
 
     let builder = ReportBuilder::new(&map, report)
         .with_colors(ColorChoice::Always)

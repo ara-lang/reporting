@@ -257,11 +257,20 @@ impl ReportBuilder<'_> {
             }
         }
 
-        if let Some(message) = &self.report.message {
+        if let Some(footer) = &self.report.footer {
             let severity = self.report.severity().unwrap_or(IssueSeverity::Error);
 
             let mut diagnostic: Diagnostic<usize> = severity.into();
-            diagnostic = diagnostic.with_message(message);
+
+            diagnostic = diagnostic.with_message(&footer.message);
+
+            if let Some(note) = &footer.note {
+                diagnostic = diagnostic.with_notes(vec![format!("note: {}", note)]);
+            }
+
+            if let Some(help) = &footer.help {
+                diagnostic = diagnostic.with_notes(vec![format!("help: {}", help)]);
+            }
 
             emit(&mut w, &config, &files, &diagnostic).ok();
         }
