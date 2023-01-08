@@ -219,6 +219,7 @@ impl Issue {
 ///
 /// assert_eq!(Severity::Error, IssueSeverity::Error.into());
 /// ```
+#[doc(hidden)]
 impl From<IssueSeverity> for Severity {
     fn from(severity: IssueSeverity) -> Self {
         match severity {
