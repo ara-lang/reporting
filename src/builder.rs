@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use codespan_reporting::diagnostic::Diagnostic;
 use codespan_reporting::diagnostic::Label;
+use codespan_reporting::diagnostic::LabelStyle;
 use codespan_reporting::files::Error as CodespanError;
 use codespan_reporting::files::SimpleFiles;
 use codespan_reporting::term::emit;
@@ -17,6 +18,7 @@ use termcolor::WriteColor;
 
 use ara_source::SourceMap;
 
+use crate::annotation::AnnotationType;
 use crate::error::Error;
 use crate::issue::IssueSeverity;
 use crate::Report;
@@ -265,7 +267,11 @@ impl ReportBuilder<'_> {
                         .annotations
                         .iter()
                         .map(|annotation| {
-                            let mut label = Label::secondary(
+                            let mut label = Label::new(
+                                match annotation.r#type {
+                                    AnnotationType::Primary => LabelStyle::Primary,
+                                    AnnotationType::Secondary => LabelStyle::Secondary,
+                                },
                                 *ids.get(&annotation.origin).unwrap_or(&0),
                                 annotation.from..annotation.to,
                             );
