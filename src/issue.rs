@@ -1,3 +1,4 @@
+use codespan_reporting::diagnostic::Severity;
 use schemars::JsonSchema;
 use serde::Deserialize;
 use serde::Serialize;
@@ -205,6 +206,29 @@ impl Issue {
         self.notes.push(note.into());
 
         self
+    }
+}
+
+/// Returns `Severity` from `IssueSeverity`
+///
+/// Example:
+///
+/// ```rust
+/// use codespan_reporting::diagnostic::Severity;
+/// use ara_reporting::issue::IssueSeverity;
+///
+/// assert_eq!(Severity::Error, IssueSeverity::Error.into());
+/// ```
+#[doc(hidden)]
+impl From<IssueSeverity> for Severity {
+    fn from(severity: IssueSeverity) -> Self {
+        match severity {
+            IssueSeverity::Error => Severity::Error,
+            IssueSeverity::Warning => Severity::Warning,
+            IssueSeverity::Note => Severity::Note,
+            IssueSeverity::Help => Severity::Help,
+            IssueSeverity::Bug => Severity::Bug,
+        }
     }
 }
 

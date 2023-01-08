@@ -254,7 +254,7 @@ impl ReportBuilder<'_> {
         }
 
         for issue in &self.report.issues {
-            let diagnostic = Into::<Diagnostic<usize>>::into(issue.severity)
+            let diagnostic = Diagnostic::new(issue.severity.into())
                 .with_code(&issue.code)
                 .with_message(&issue.message)
                 .with_labels(vec![Label::primary(
@@ -308,8 +308,11 @@ impl ReportBuilder<'_> {
         }
 
         if let Some(footer) = &self.report.footer {
-            let diagnostic: Diagnostic<usize> = Into::<Diagnostic<usize>>::into(
-                self.report.severity().unwrap_or(IssueSeverity::Error),
+            let diagnostic = Diagnostic::new(
+                self.report
+                    .severity()
+                    .unwrap_or(IssueSeverity::Error)
+                    .into(),
             )
             .with_message(&footer.message)
             .with_notes(footer.notes.clone());
@@ -318,17 +321,5 @@ impl ReportBuilder<'_> {
         }
 
         Ok(())
-    }
-}
-
-impl From<IssueSeverity> for Diagnostic<usize> {
-    fn from(severity: IssueSeverity) -> Self {
-        match severity {
-            IssueSeverity::Error => Diagnostic::error(),
-            IssueSeverity::Warning => Diagnostic::warning(),
-            IssueSeverity::Note => Diagnostic::note(),
-            IssueSeverity::Help => Diagnostic::help(),
-            IssueSeverity::Bug => Diagnostic::bug(),
-        }
     }
 }
