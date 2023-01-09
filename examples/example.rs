@@ -90,9 +90,9 @@ function main(): int|string {
             .with_note("for more information about this error, try `ara --explain E0308`"),
         );
 
-    let builder = ReportBuilder::new(&map, report)
+    let builder = ReportBuilder::new(&map)
         .with_colors(ColorChoice::Always)
         .with_charset(CharSet::Unicode);
 
-    builder.print()
+    builder.print(&report)
 }
