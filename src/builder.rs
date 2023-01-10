@@ -289,7 +289,7 @@ impl ReportBuilder<'_> {
 
     fn diagnostics(
         &self,
-        report: Report,
+        report: &Report,
         files_ids: &HashMap<String, usize>,
     ) -> Vec<Diagnostic<usize>> {
         let mut diagnostics = Vec::new();

@@ -10,7 +10,7 @@ pub mod builder;
 pub mod error;
 pub mod issue;
 
-pub type ReportCollection = Vec<Report>;
+pub type ReportCollection<'a> = Vec<&'a Report>;
 
 #[derive(Debug, PartialEq, Eq, Clone, Deserialize, Serialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
@@ -27,7 +27,7 @@ pub struct Report {
 }
 
 pub trait Reportable {
-    fn to_reports(&self) -> Vec<Report>;
+    fn to_reports(&self) -> Vec<&Report>;
 }
 
 /// A report.
@@ -167,13 +167,13 @@ impl ReportFooter {
 }
 
 impl Reportable for Report {
-    fn to_reports(&self) -> Vec<Report> {
-        vec![self.clone()]
+    fn to_reports(&self) -> Vec<&Report> {
+        vec![self]
     }
 }
 
-impl Reportable for ReportCollection {
-    fn to_reports(&self) -> Vec<Report> {
-        self.clone()
+impl Reportable for ReportCollection<'_> {
+    fn to_reports(&self) -> Vec<&Report> {
+        self.to_vec()
     }
 }

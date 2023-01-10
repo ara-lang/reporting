@@ -80,7 +80,7 @@ function foo(Bar&float) {}
                 .with_note("this is a note message"),
         );
 
-    let reports: ReportCollection = vec![first_report, second_report];
+    let reports: ReportCollection = vec![&first_report, &second_report];
 
     let builder = ReportBuilder::new(&map)
         .with_colors(ColorChoice::Always)
