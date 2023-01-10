@@ -10,6 +10,8 @@ pub mod builder;
 pub mod error;
 pub mod issue;
 
+pub type ReportCollection<'a> = Vec<&'a Report>;
+
 #[derive(Debug, PartialEq, Eq, Clone, Deserialize, Serialize, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub struct ReportFooter {
@@ -22,6 +24,10 @@ pub struct ReportFooter {
 pub struct Report {
     pub issues: Vec<Issue>,
     pub footer: Option<ReportFooter>,
+}
+
+pub trait Reportable {
+    fn to_reports(&self) -> Vec<&Report>;
 }
 
 /// A report.
@@ -93,20 +99,17 @@ impl Report {
     /// let first_report = Report::new()
     ///     .with_issue(Issue::help("0001", "...", "main.ara", 10, 11))
     ///     .with_issue(Issue::warning("0002", "...", "some_file.ara", 9, 10))
-    ///     .with_issue(Issue::note("0003", "...", "main.ara", 10, 11))
-    /// ;
+    ///     .with_issue(Issue::note("0003", "...", "main.ara", 10, 11));
     ///
     /// let second_report = Report::new()
     ///     .with_issue(Issue::warning("0001", "...", "some_file.ara", 9, 10))
     ///     .with_issue(Issue::bug("0002", "...", "main.ara", 10, 11))
-    ///     .with_issue(Issue::error("0003", "...", "main.ara", 10, 11))
-    /// ;
+    ///     .with_issue(Issue::error("0003", "...", "main.ara", 10, 11));
     ///
     /// let third_report = Report::new()
     ///     .with_issue(Issue::note("0001", "...", "main.ara", 10, 11))
     ///     .with_issue(Issue::bug("0002", "...", "main.ara", 10, 11))
-    ///     .with_issue(Issue::bug("0003", "...", "main.ara", 10, 11))
-    /// ;
+    ///     .with_issue(Issue::bug("0003", "...", "main.ara", 10, 11));
     ///
     /// assert_eq!(empty_report.severity(), None);
     /// assert_eq!(first_report.severity().unwrap(), IssueSeverity::Warning);
@@ -160,5 +163,17 @@ impl ReportFooter {
         self.notes.push(note.into());
 
         self
+    }
+}
+
+impl Reportable for Report {
+    fn to_reports(&self) -> Vec<&Report> {
+        vec![self]
+    }
+}
+
+impl Reportable for ReportCollection<'_> {
+    fn to_reports(&self) -> Vec<&Report> {
+        self.to_vec()
     }
 }

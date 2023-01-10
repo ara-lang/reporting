@@ -50,9 +50,9 @@ $b = match $a {
                 .with_note("this is a note message"),
         );
 
-    let builder = ReportBuilder::new(&map, report)
+    let builder = ReportBuilder::new(&map)
         .with_colors(ColorChoice::Always)
         .with_charset(CharSet::Unicode);
 
-    builder.print()
+    builder.print(&report)
 }

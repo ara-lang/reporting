@@ -22,6 +22,7 @@ use crate::annotation::AnnotationType;
 use crate::error::Error;
 use crate::issue::IssueSeverity;
 use crate::Report;
+use crate::Reportable;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum CharSet {
@@ -46,7 +47,6 @@ pub enum DisplayStyle {
 #[derive(Debug, Clone)]
 pub struct ReportBuilder<'a> {
     pub source_map: &'a SourceMap,
-    pub report: Report,
     pub colors: ColorChoice,
     pub charset: CharSet,
     pub style: DisplayStyle,
@@ -71,15 +71,14 @@ pub struct ReportBuilder<'a> {
 ///     Source::inline(SourceKind::Script, "function main(): void {}"),
 /// ]);
 ///
-/// let builder = ReportBuilder::new(&source, report);
-/// # assert_eq!(builder.source_map.sources[0].content, "function main(): void {}");
+/// let builder = ReportBuilder::new(&source);
+/// assert_eq!(builder.source_map.sources[0].content, "function main(): void {}");
 /// ```
 impl ReportBuilder<'_> {
     /// Create a new report builder.
-    pub fn new(source_map: &SourceMap, report: Report) -> ReportBuilder {
+    pub fn new(source_map: &SourceMap) -> ReportBuilder {
         ReportBuilder {
             source_map,
-            report,
             colors: ColorChoice::Auto,
             charset: CharSet::Ascii,
             style: DisplayStyle::Default,
@@ -101,7 +100,7 @@ impl ReportBuilder<'_> {
     /// # let source = SourceMap::new(vec![
     /// #     Source::inline(SourceKind::Script, "function main(): void {}"),
     /// # ]);
-    /// # let builder = ReportBuilder::new(&source, report);
+    /// # let builder = ReportBuilder::new(&source);
     ///
     /// let builder = builder.with_colors(ColorChoice::Never);
     /// assert_eq!(builder.colors, ColorChoice::Never);
@@ -133,11 +132,13 @@ impl ReportBuilder<'_> {
     /// # let source = SourceMap::new(vec![
     /// #     Source::inline(SourceKind::Script, "function main(): void {}"),
     /// # ]);
-    /// # let builder = ReportBuilder::new(&source, report);
+    /// # let builder = ReportBuilder::new(&source);
+    ///
     /// let builder = builder.with_charset(CharSet::Ascii);
-    /// # assert_eq!(builder.charset, CharSet::Ascii);
+    /// assert_eq!(builder.charset, CharSet::Ascii);
+    ///
     /// let builder = builder.with_charset(CharSet::Unicode);
-    /// # assert_eq!(builder.charset, CharSet::Unicode);
+    /// assert_eq!(builder.charset, CharSet::Unicode);
     /// ```
     pub fn with_charset(mut self, charset: CharSet) -> Self {
         self.charset = charset;
@@ -160,13 +161,16 @@ impl ReportBuilder<'_> {
     /// # let source = SourceMap::new(vec![
     /// #     Source::inline(SourceKind::Script, "function main(): void {}"),
     /// # ]);
-    /// # let builder = ReportBuilder::new(&source, report);
+    /// # let builder = ReportBuilder::new(&source);
+    ///
     /// let builder = builder.with_style(DisplayStyle::Default);
-    /// # assert_eq!(builder.style, DisplayStyle::Default);
+    /// assert_eq!(builder.style, DisplayStyle::Default);
+    ///
     /// let builder = builder.with_style(DisplayStyle::Comfortable);
-    /// # assert_eq!(builder.style, DisplayStyle::Comfortable);
+    /// assert_eq!(builder.style, DisplayStyle::Comfortable);
+    ///
     /// let builder = builder.with_style(DisplayStyle::Compact);
-    /// # assert_eq!(builder.style, DisplayStyle::Compact);
+    /// assert_eq!(builder.style, DisplayStyle::Compact);
     /// ```
     pub fn with_style(mut self, style: DisplayStyle) -> Self {
         self.style = style;
@@ -175,7 +179,7 @@ impl ReportBuilder<'_> {
     }
 
     /// Print the report to stdout.
-    pub fn print(&self) -> Result<(), Error> {
+    pub fn print(&self, reportable: &dyn Reportable) -> Result<(), Error> {
         let mut writer = StandardStream::stdout(match self.colors {
             ColorChoice::Always => match self.charset {
                 CharSet::Ascii => TermColorChoice::AlwaysAnsi,
@@ -185,11 +189,11 @@ impl ReportBuilder<'_> {
             ColorChoice::Never => TermColorChoice::Never,
         });
 
-        self.write(&mut writer)
+        self.write(&mut writer, reportable)
     }
 
     /// Print the report to stderr.
-    pub fn eprint(&self) -> Result<(), Error> {
+    pub fn eprint(&self, reportable: &dyn Reportable) -> Result<(), Error> {
         let mut writer = StandardStream::stderr(match self.colors {
             ColorChoice::Always => match self.charset {
                 CharSet::Ascii => TermColorChoice::AlwaysAnsi,
@@ -199,11 +203,11 @@ impl ReportBuilder<'_> {
             ColorChoice::Never => TermColorChoice::Never,
         });
 
-        self.write(&mut writer)
+        self.write(&mut writer, reportable)
     }
 
     /// Get the report as a string.
-    pub fn as_string(&self) -> Result<String, Error> {
+    pub fn as_string(&self, reportable: &dyn Reportable) -> Result<String, Error> {
         let buffer = BufferWriter::stderr(match self.colors {
             ColorChoice::Always => match self.charset {
                 CharSet::Ascii => TermColorChoice::AlwaysAnsi,
@@ -215,13 +219,13 @@ impl ReportBuilder<'_> {
 
         let mut buffer = buffer.buffer();
 
-        self.write(&mut buffer)?;
+        self.write(&mut buffer, reportable)?;
 
         Ok(String::from_utf8_lossy(buffer.as_slice()).to_string())
     }
 
     /// Write the report to the given writer.
-    pub fn write<T: WriteColor>(&self, mut w: T) -> Result<(), Error> {
+    pub fn write<T: WriteColor>(&self, mut w: T, reportable: &dyn Reportable) -> Result<(), Error> {
         let mut styles = Styles::default();
 
         styles.secondary_label.set_bold(true);
@@ -245,20 +249,57 @@ impl ReportBuilder<'_> {
         };
 
         let mut files = SimpleFiles::new();
-        let mut ids = HashMap::new();
-        for source in &self.source_map.sources {
-            let name = source.name();
-            let file_id = files.add(name, &source.content);
+        let mut files_ids = HashMap::new();
+        self.source_map.sources.iter().for_each(|source| {
+            files_ids.insert(
+                source.name().to_string(),
+                files.add(source.name(), &source.content),
+            );
+        });
 
-            ids.insert(name.to_string(), file_id);
+        for report in reportable.to_reports() {
+            let diagnostics = self.diagnostics(report, &files_ids);
+
+            for diagnostic in diagnostics {
+                match emit(&mut w, &config, &files, &diagnostic) {
+                    Ok(_) => (),
+                    Err(err) => match err {
+                        CodespanError::FileMissing => Err(Error::FileMissing)?,
+                        CodespanError::IndexTooLarge { given, max } => {
+                            Err(Error::IndexTooLarge { given, max })?
+                        }
+                        CodespanError::LineTooLarge { given, max } => {
+                            Err(Error::LineTooLarge { given, max })?
+                        }
+                        CodespanError::ColumnTooLarge { given, max } => {
+                            Err(Error::ColumnTooLarge { given, max })?
+                        }
+                        CodespanError::InvalidCharBoundary { given } => {
+                            Err(Error::InvalidCharBoundary { given })?
+                        }
+                        CodespanError::Io(err) => Err(Error::Io(err))?,
+                        other => Err(Error::CodespanError(other))?,
+                    },
+                }
+            }
         }
 
-        for issue in &self.report.issues {
+        Ok(())
+    }
+
+    fn diagnostics(
+        &self,
+        report: &Report,
+        files_ids: &HashMap<String, usize>,
+    ) -> Vec<Diagnostic<usize>> {
+        let mut diagnostics = Vec::new();
+
+        for issue in &report.issues {
             let diagnostic = Diagnostic::new(issue.severity.into())
                 .with_code(&issue.code)
                 .with_message(&issue.message)
                 .with_labels(vec![Label::primary(
-                    *ids.get(&issue.origin).unwrap_or(&0),
+                    *files_ids.get(&issue.origin).unwrap_or(&0),
                     issue.from..issue.to,
                 )])
                 .with_notes(issue.notes.clone())
@@ -272,7 +313,7 @@ impl ReportBuilder<'_> {
                                     AnnotationType::Primary => LabelStyle::Primary,
                                     AnnotationType::Secondary => LabelStyle::Secondary,
                                 },
-                                *ids.get(&annotation.origin).unwrap_or(&0),
+                                *files_ids.get(&annotation.origin).unwrap_or(&0),
                                 annotation.from..annotation.to,
                             );
 
@@ -285,41 +326,17 @@ impl ReportBuilder<'_> {
                         .collect(),
                 );
 
-            match emit(&mut w, &config, &files, &diagnostic) {
-                Ok(_) => (),
-                Err(err) => match err {
-                    CodespanError::FileMissing => Err(Error::FileMissing)?,
-                    CodespanError::IndexTooLarge { given, max } => {
-                        Err(Error::IndexTooLarge { given, max })?
-                    }
-                    CodespanError::LineTooLarge { given, max } => {
-                        Err(Error::LineTooLarge { given, max })?
-                    }
-                    CodespanError::ColumnTooLarge { given, max } => {
-                        Err(Error::ColumnTooLarge { given, max })?
-                    }
-                    CodespanError::InvalidCharBoundary { given } => {
-                        Err(Error::InvalidCharBoundary { given })?
-                    }
-                    CodespanError::Io(err) => Err(Error::Io(err))?,
-                    other => Err(Error::CodespanError(other))?,
-                },
-            }
+            diagnostics.push(diagnostic);
         }
 
-        if let Some(footer) = &self.report.footer {
-            let diagnostic = Diagnostic::new(
-                self.report
-                    .severity()
-                    .unwrap_or(IssueSeverity::Error)
-                    .into(),
-            )
-            .with_message(&footer.message)
-            .with_notes(footer.notes.clone());
-
-            emit(&mut w, &config, &files, &diagnostic).ok();
+        if let Some(footer) = &report.footer {
+            diagnostics.push(
+                Diagnostic::new(report.severity().unwrap_or(IssueSeverity::Error).into())
+                    .with_message(&footer.message)
+                    .with_notes(footer.notes.clone()),
+            );
         }
 
-        Ok(())
+        diagnostics
     }
 }

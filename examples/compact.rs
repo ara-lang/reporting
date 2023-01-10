@@ -59,10 +59,10 @@ function add(int $a, int $b): int {
         ),
     );
 
-    let builder = ReportBuilder::new(&map, report)
+    let builder = ReportBuilder::new(&map)
         .with_charset(CharSet::Unicode)
         .with_colors(ColorChoice::Always)
         .with_style(DisplayStyle::Compact);
 
-    builder.print()
+    builder.print(&report)
 }
