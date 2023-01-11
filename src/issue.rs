@@ -195,6 +195,7 @@ impl Issue {
     }
 
     /// Add an annotation to this issue.
+    #[must_use]
     pub fn with_annotation(mut self, annotation: Annotation) -> Self {
         self.annotations.push(annotation);
 
@@ -202,6 +203,7 @@ impl Issue {
     }
 
     /// Add a note to this issue.
+    #[must_use]
     pub fn with_note<S: Into<String>>(mut self, note: S) -> Self {
         self.notes.push(note.into());
 

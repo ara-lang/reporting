@@ -113,6 +113,7 @@ impl ReportBuilder<'_> {
     /// let builder = builder.with_colors(ColorChoice::Auto);
     /// assert_eq!(builder.colors, ColorChoice::Auto);
     /// ```
+    #[must_use]
     pub fn with_colors(mut self, colors: ColorChoice) -> Self {
         self.colors = colors;
 
@@ -142,6 +143,7 @@ impl ReportBuilder<'_> {
     /// let builder = builder.with_charset(CharSet::Unicode);
     /// assert_eq!(builder.charset, CharSet::Unicode);
     /// ```
+    #[must_use]
     pub fn with_charset(mut self, charset: CharSet) -> Self {
         self.charset = charset;
 
@@ -174,6 +176,7 @@ impl ReportBuilder<'_> {
     /// let builder = builder.with_style(DisplayStyle::Compact);
     /// assert_eq!(builder.style, DisplayStyle::Compact);
     /// ```
+    #[must_use]
     pub fn with_style(mut self, style: DisplayStyle) -> Self {
         self.style = style;
 

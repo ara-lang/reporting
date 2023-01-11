@@ -90,6 +90,7 @@ impl Annotation {
     ///
     /// assert_eq!(annotation.message, Some("try removing this semicolon".to_string()));
     /// ```
+    #[must_use]
     pub fn with_message<S: Into<String>>(mut self, message: S) -> Self {
         self.message = Some(message.into());
 
