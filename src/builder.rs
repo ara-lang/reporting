@@ -10,6 +10,8 @@ use codespan_reporting::term::Chars;
 use codespan_reporting::term::Config;
 use codespan_reporting::term::DisplayStyle as CodespanDisplayStyle;
 use codespan_reporting::term::Styles;
+use rustc_hash::FxHashMap;
+
 use termcolor::BufferWriter;
 use termcolor::Color;
 use termcolor::ColorChoice as TermColorChoice;
@@ -330,10 +332,30 @@ impl ReportBuilder<'_> {
         }
 
         if let Some(footer) = &report.footer {
+            let mut notes = footer.notes.clone();
+
+            if footer.summary {
+                let mut entries = FxHashMap::default();
+                report.issues.iter().for_each(|issue| {
+                    *entries.entry(issue.severity).or_insert(0) += 1;
+                });
+
+                let mut entries = entries.iter().collect::<Vec<(&IssueSeverity, &usize)>>();
+                entries.sort_by_key(|severity| *severity);
+
+                let summary = entries
+                    .iter()
+                    .map(|(severity, count)| format!("{} {}(s)", count, severity))
+                    .collect::<Vec<String>>()
+                    .join(", ");
+
+                notes.push(format!("summary: {}", summary));
+            }
+
             diagnostics.push(
                 Diagnostic::new(report.severity().unwrap_or(IssueSeverity::Error).into())
                     .with_message(&footer.message)
-                    .with_notes(footer.notes.clone()),
+                    .with_notes(notes),
             );
         }
 

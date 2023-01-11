@@ -17,6 +17,7 @@ pub type ReportCollection<'a> = Vec<&'a Report>;
 pub struct ReportFooter {
     pub message: String,
     pub notes: Vec<String>,
+    pub summary: bool,
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Deserialize, Serialize, JsonSchema)]
@@ -155,12 +156,20 @@ impl ReportFooter {
         Self {
             message: message.into(),
             notes: vec![],
+            summary: true,
         }
     }
 
     /// Add a note to this footer.
     pub fn with_note<S: Into<String>>(mut self, note: S) -> Self {
         self.notes.push(note.into());
+
+        self
+    }
+
+    /// Defines if either the summary should be enabled or disabled
+    pub fn with_summary(mut self, enabled: bool) -> Self {
+        self.summary = enabled;
 
         self
     }

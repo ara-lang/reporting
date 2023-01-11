@@ -5,6 +5,7 @@ use ara_reporting::builder::ReportBuilder;
 use ara_reporting::error::Error;
 use ara_reporting::issue::Issue;
 use ara_reporting::Report;
+use ara_reporting::ReportFooter;
 use ara_source::source::Source;
 use ara_source::source::SourceKind;
 use ara_source::source::DEFAULT_NAME;
@@ -41,6 +42,13 @@ function main(): int|string {
         )
         .with_issue(
             Issue::warning("W123", "some warning here", DEFAULT_NAME, 29, 187)
+                .with_annotation(
+                    Annotation::secondary(DEFAULT_NAME, 126, 127).with_message("an annotation"),
+                )
+                .with_note("this is a note"),
+        )
+        .with_issue(
+            Issue::warning("W124", "some warning here", DEFAULT_NAME, 29, 187)
                 .with_annotation(
                     Annotation::secondary(DEFAULT_NAME, 126, 127).with_message("an annotation"),
                 )
@@ -88,7 +96,8 @@ function main(): int|string {
                     .with_message("expected `{int}`, found `{string}`"),
             )
             .with_note("for more information about this error, try `ara --explain E0308`"),
-        );
+        )
+        .with_footer(ReportFooter::new("this is a report footer message"));
 
     let builder = ReportBuilder::new(&map)
         .with_colors(ColorChoice::Always)
