@@ -334,22 +334,22 @@ impl ReportBuilder<'_> {
         if let Some(footer) = &report.footer {
             let mut notes = footer.notes.clone();
 
-            if footer.with_summary {
+            if footer.summary {
                 let mut entries = FxHashMap::default();
                 report.issues.iter().for_each(|issue| {
-                    let count = entries.entry(issue.severity).or_insert(0);
-                    *count += 1;
+                    *entries.entry(issue.severity).or_insert(0) += 1;
                 });
 
                 let mut entries = entries.iter().collect::<Vec<(&IssueSeverity, &usize)>>();
                 entries.sort_by_key(|severity| *severity);
 
-                let mut summary = String::from("summary: ");
-                entries.iter().for_each(|(severity, count)| {
-                    summary += &format!("{} {}(s), ", count, severity);
-                });
+                let summary = entries
+                    .iter()
+                    .map(|(severity, count)| format!("{} {}(s)", count, severity))
+                    .collect::<Vec<String>>()
+                    .join(", ");
 
-                notes.push(summary.trim_end_matches(", ").to_string());
+                notes.push(format!("summary: {}", summary));
             }
 
             diagnostics.push(
