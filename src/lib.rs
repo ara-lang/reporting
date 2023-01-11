@@ -17,6 +17,7 @@ pub type ReportCollection<'a> = Vec<&'a Report>;
 pub struct ReportFooter {
     pub message: String,
     pub notes: Vec<String>,
+    pub with_summary: bool,
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Deserialize, Serialize, JsonSchema)]
@@ -155,6 +156,7 @@ impl ReportFooter {
         Self {
             message: message.into(),
             notes: vec![],
+            with_summary: true,
         }
     }
 
