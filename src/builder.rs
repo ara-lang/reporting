@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use codespan_reporting::diagnostic::Diagnostic;
 use codespan_reporting::diagnostic::Label;
 use codespan_reporting::diagnostic::LabelStyle;
@@ -251,7 +249,7 @@ impl ReportBuilder<'_> {
         };
 
         let mut files = SimpleFiles::new();
-        let mut files_ids = HashMap::new();
+        let mut files_ids = FxHashMap::default();
         self.source_map.sources.iter().for_each(|source| {
             files_ids.insert(
                 source.name().to_string(),
@@ -292,7 +290,7 @@ impl ReportBuilder<'_> {
     fn diagnostics(
         &self,
         report: &Report,
-        files_ids: &HashMap<String, usize>,
+        files_ids: &FxHashMap<String, usize>,
     ) -> Vec<Diagnostic<usize>> {
         let mut diagnostics = Vec::new();
 
