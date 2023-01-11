@@ -75,14 +75,18 @@ impl Report {
     }
 
     /// Add an issue to this report.
+    #[must_use]
     pub fn with_issue(mut self, issue: Issue) -> Self {
         self.issues.push(issue);
+
         self
     }
 
     /// Add a footer to this report.
+    #[must_use]
     pub fn with_footer(mut self, footer: ReportFooter) -> Self {
         self.footer = Some(footer);
+
         self
     }
 
@@ -161,6 +165,7 @@ impl ReportFooter {
     }
 
     /// Add a note to this footer.
+    #[must_use]
     pub fn with_note<S: Into<String>>(mut self, note: S) -> Self {
         self.notes.push(note.into());
 
@@ -168,6 +173,7 @@ impl ReportFooter {
     }
 
     /// Defines if either the summary should be enabled or disabled
+    #[must_use]
     pub fn with_summary(mut self, enabled: bool) -> Self {
         self.summary = enabled;
 
