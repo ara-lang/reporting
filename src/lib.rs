@@ -112,14 +112,14 @@ impl Report {
     ///     .with_issue(Issue::error("0003", "...", "main.ara", 10, 11));
     ///
     /// let third_report = Report::new()
-    ///     .with_issue(Issue::note("0001", "...", "main.ara", 10, 11))
-    ///     .with_issue(Issue::bug("0002", "...", "main.ara", 10, 11))
-    ///     .with_issue(Issue::bug("0003", "...", "main.ara", 10, 11));
+    ///     .with_issue(Issue::help("0001", "...", "main.ara", 10, 11))
+    ///     .with_issue(Issue::note("0002", "...", "main.ara", 10, 11))
+    ///     .with_issue(Issue::note("0003", "...", "main.ara", 10, 11));
     ///
     /// assert_eq!(empty_report.severity(), None);
     /// assert_eq!(first_report.severity().unwrap(), IssueSeverity::Warning);
-    /// assert_eq!(second_report.severity().unwrap(), IssueSeverity::Error);
-    /// assert_eq!(third_report.severity().unwrap(), IssueSeverity::Note);
+    /// assert_eq!(second_report.severity().unwrap(), IssueSeverity::Bug);
+    /// assert_eq!(third_report.severity().unwrap(), IssueSeverity::Help);
     /// ```
     pub fn severity(&self) -> Option<IssueSeverity> {
         self.issues.iter().map(|issue| issue.severity).max()
