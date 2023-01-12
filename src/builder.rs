@@ -9,7 +9,6 @@ use codespan_reporting::term::Config;
 use codespan_reporting::term::DisplayStyle as CodespanDisplayStyle;
 use codespan_reporting::term::Styles;
 use rustc_hash::FxHashMap;
-
 use termcolor::BufferWriter;
 use termcolor::Color;
 use termcolor::ColorChoice as TermColorChoice;
