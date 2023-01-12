@@ -10,11 +10,11 @@ use crate::annotation::Annotation;
 )]
 #[serde(rename_all = "snake_case", tag = "type")]
 pub enum IssueSeverity {
-    Bug,
     Note,
     Help,
     Warning,
     Error,
+    Bug,
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Deserialize, Serialize, JsonSchema)]
