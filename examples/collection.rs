@@ -75,6 +75,13 @@ function foo(Bar&float) {}
             .with_note("a scalar type is either `int`, `float`, `string`, or `bool`.")
             .with_note("try using a different type for the intersection."),
         )
+        .with_issue(Issue::bug(
+            "B0001",
+            "failed to read the file",
+            None::<String>,
+            None,
+            None,
+        ))
         .with_footer(
             ReportFooter::new("this is a report footer message")
                 .with_note("this is a note message"),

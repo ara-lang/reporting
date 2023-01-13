@@ -55,15 +55,15 @@ pub trait Reportable {
 /// # assert_eq!(report.issues[0].severity, IssueSeverity::Error);
 /// # assert_eq!(report.issues[0].code, "0003");
 /// # assert_eq!(report.issues[0].message, "standalone type `void` cannot be part of a union");
-/// # assert_eq!(report.issues[0].origin, "main.ara");
-/// # assert_eq!(report.issues[0].from, 10);
-/// # assert_eq!(report.issues[0].to, 14);
+/// # assert_eq!(report.issues[0].origin, Some("main.ara".to_string()));
+/// # assert_eq!(report.issues[0].from, Some(10));
+/// # assert_eq!(report.issues[0].to, Some(14));
 /// # assert_eq!(report.issues[1].severity, IssueSeverity::Warning);
 /// # assert_eq!(report.issues[1].code, "0023");
 /// # assert_eq!(report.issues[1].message, "...");
-/// # assert_eq!(report.issues[1].origin, "some_file.ara");
-/// # assert_eq!(report.issues[1].from, 9);
-/// # assert_eq!(report.issues[1].to, 10);
+/// # assert_eq!(report.issues[1].origin, Some("some_file.ara".to_string()));
+/// # assert_eq!(report.issues[1].from, Some(9));
+/// # assert_eq!(report.issues[1].to, Some(10));
 /// ```
 impl Report {
     /// Create a new report.
@@ -108,7 +108,7 @@ impl Report {
     ///
     /// let second_report = Report::new()
     ///     .with_issue(Issue::warning("0001", "...", "some_file.ara", 9, 10))
-    ///     .with_issue(Issue::bug("0002", "...", "main.ara", 10, 11))
+    ///     .with_issue(Issue::bug("0002", "...", Some("main.ara"), Some(10), Some(11)))
     ///     .with_issue(Issue::error("0003", "...", "main.ara", 10, 11));
     ///
     /// let third_report = Report::new()

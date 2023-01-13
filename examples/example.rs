@@ -79,9 +79,9 @@ function main(): int|string {
             Issue::bug(
                 "E123",
                 "`match` arms have incompatible types",
-                DEFAULT_NAME,
-                84,
-                163,
+                Some(DEFAULT_NAME),
+                Some(84),
+                Some(163),
             )
             .with_annotation(
                 Annotation::secondary(DEFAULT_NAME, 110, 111)

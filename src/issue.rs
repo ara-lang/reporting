@@ -23,9 +23,9 @@ pub struct Issue {
     pub severity: IssueSeverity,
     pub code: String,
     pub message: String,
-    pub origin: String,
-    pub from: usize,
-    pub to: usize,
+    pub origin: Option<String>,
+    pub from: Option<usize>,
+    pub to: Option<usize>,
     pub annotations: Vec<Annotation>,
     pub notes: Vec<String>,
 }
@@ -51,8 +51,8 @@ pub struct Issue {
 /// # assert_eq!(issue.severity, IssueSeverity::Error);
 /// # assert_eq!(issue.code, "0003");
 /// # assert_eq!(issue.message, "standalone type `void` cannot be part of a union");
-/// # assert_eq!(issue.from, 10);
-/// # assert_eq!(issue.to, 14);
+/// # assert_eq!(issue.from, Some(10));
+/// # assert_eq!(issue.to, Some(14));
 /// # assert_eq!(issue.annotations.len(), 1);
 /// # assert_eq!(issue.annotations[0].from, 9);
 /// # assert_eq!(issue.annotations[0].to, 10);
@@ -68,15 +68,15 @@ impl Issue {
         severity: IssueSeverity,
         code: C,
         message: M,
-        origin: O,
-        from: usize,
-        to: usize,
+        origin: Option<O>,
+        from: Option<usize>,
+        to: Option<usize>,
     ) -> Self {
         Self {
             severity,
             code: code.into(),
             message: message.into(),
-            origin: origin.into(),
+            origin: origin.map(|o| o.into()),
             from,
             to,
             annotations: Vec::new(),
@@ -103,7 +103,14 @@ impl Issue {
         from: usize,
         to: usize,
     ) -> Self {
-        Self::new(IssueSeverity::Error, code, message, origin, from, to)
+        Self::new(
+            IssueSeverity::Error,
+            code,
+            message,
+            Some(origin),
+            Some(from),
+            Some(to),
+        )
     }
 
     /// Create a new warning issue with the given code and message.
@@ -125,7 +132,14 @@ impl Issue {
         from: usize,
         to: usize,
     ) -> Self {
-        Self::new(IssueSeverity::Warning, code, message, origin, from, to)
+        Self::new(
+            IssueSeverity::Warning,
+            code,
+            message,
+            Some(origin),
+            Some(from),
+            Some(to),
+        )
     }
 
     /// Create a new help issue with the given code and message.
@@ -147,7 +161,14 @@ impl Issue {
         from: usize,
         to: usize,
     ) -> Self {
-        Self::new(IssueSeverity::Help, code, message, origin, from, to)
+        Self::new(
+            IssueSeverity::Help,
+            code,
+            message,
+            Some(origin),
+            Some(from),
+            Some(to),
+        )
     }
 
     /// Create a new note issue with the given code and message.
@@ -169,7 +190,14 @@ impl Issue {
         from: usize,
         to: usize,
     ) -> Self {
-        Self::new(IssueSeverity::Note, code, message, origin, from, to)
+        Self::new(
+            IssueSeverity::Note,
+            code,
+            message,
+            Some(origin),
+            Some(from),
+            Some(to),
+        )
     }
 
     /// Create a new bug issue with the given code and message.
@@ -180,16 +208,16 @@ impl Issue {
     /// use ara_reporting::issue::Issue;
     /// use ara_reporting::issue::IssueSeverity;
     ///
-    /// let issue = Issue::bug("0003", "...", "main.ara", 10, 11);
+    /// let issue = Issue::bug("0003", "...", Some("main.ara"), Some(10), Some(11));
     ///
     /// assert_eq!(issue.severity, IssueSeverity::Bug);
     /// ```
     pub fn bug<C: Into<String>, M: Into<String>, O: Into<String>>(
         code: C,
         message: M,
-        origin: O,
-        from: usize,
-        to: usize,
+        origin: Option<O>,
+        from: Option<usize>,
+        to: Option<usize>,
     ) -> Self {
         Self::new(IssueSeverity::Bug, code, message, origin, from, to)
     }
@@ -267,15 +295,23 @@ impl std::fmt::Display for IssueSeverity {
 /// use ara_reporting::issue::Issue;
 ///
 /// let issue = Issue::error("E0231", "unexpected token `{`, expecting `[`", "main.ara", 10, 1);
-///
 /// assert_eq!(issue.to_string(), "error[E0231]: unexpected token `{`, expecting `[` at main.ara@10:1");
+///
+/// let issue = Issue::bug("B0001", "failed to read the file", None::<String>, None, None);
+/// assert_eq!(issue.to_string(), "bug[B0001]: failed to read the file");
 /// ```
 impl std::fmt::Display for Issue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "{}[{}]: {} at {}@{}:{}",
-            self.severity, self.code, self.message, self.origin, self.from, self.to
-        )
+        write!(f, "{}[{}]: {}", self.severity, self.code, self.message)?;
+
+        if let Some(origin) = &self.origin {
+            write!(f, " at {}", origin)?;
+        }
+
+        if let (Some(from), Some(to)) = (self.from, self.to) {
+            write!(f, "@{}:{}", from, to)?;
+        }
+
+        Ok(())
     }
 }
