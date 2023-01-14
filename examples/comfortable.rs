@@ -39,24 +39,19 @@ function add(int $a, int $b): int {
     ]);
 
     let report = Report::new().with_issue(
-        Issue::error(
-            "",
-            "mismatched types expected `{int}`, found `{string}`",
-            "src/main.ara",
-            68,
-            71,
-        )
-        .with_annotation(
-            Annotation::secondary("src/main.ara", 61, 64)
-                .with_message("arguments to this function are incorrect"),
-        )
-        .with_annotation(
-            Annotation::secondary("vendor/some-vendor/some-lib/src/add.ara", 27, 51)
-                .with_message("function defined here"),
-        )
-        .with_note(
-            "you can cast a `{string}` to an `{int}` using `Psl\\Str\\to_int(...)` function",
-        ),
+        Issue::error("", "mismatched types expected `{int}`, found `{string}`")
+            .with_source("src/main.ara", 68, 71)
+            .with_annotation(
+                Annotation::secondary("src/main.ara", 61, 64)
+                    .with_message("arguments to this function are incorrect"),
+            )
+            .with_annotation(
+                Annotation::secondary("vendor/some-vendor/some-lib/src/add.ara", 27, 51)
+                    .with_message("function defined here"),
+            )
+            .with_note(
+                "you can cast a `{string}` to an `{int}` using `Psl\\Str\\to_int(...)` function",
+            ),
     );
 
     let builder = ReportBuilder::new(&map)

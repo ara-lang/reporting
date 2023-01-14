@@ -34,28 +34,32 @@ function main(): int|string {
 
     let report = Report::new()
         .with_issue(
-            Issue::error("E123", "some error here", DEFAULT_NAME, 35, 41)
+            Issue::error("E123", "some error here")
+                .with_source(DEFAULT_NAME, 35, 41)
                 .with_annotation(
                     Annotation::secondary(DEFAULT_NAME, 41, 42).with_message("an annotation"),
                 )
                 .with_note("this is a note"),
         )
         .with_issue(
-            Issue::warning("W123", "some warning here", DEFAULT_NAME, 29, 187)
+            Issue::warning("W123", "some warning here")
+                .with_source(DEFAULT_NAME, 29, 187)
                 .with_annotation(
                     Annotation::secondary(DEFAULT_NAME, 126, 127).with_message("an annotation"),
                 )
                 .with_note("this is a note"),
         )
         .with_issue(
-            Issue::warning("W124", "some warning here", DEFAULT_NAME, 29, 187)
+            Issue::warning("W124", "some warning here")
+                .with_source(DEFAULT_NAME, 29, 187)
                 .with_annotation(
                     Annotation::secondary(DEFAULT_NAME, 126, 127).with_message("an annotation"),
                 )
                 .with_note("this is a note"),
         )
         .with_issue(
-            Issue::note("N123", "some note here", DEFAULT_NAME, 84, 163)
+            Issue::note("N123", "some note here")
+                .with_source(DEFAULT_NAME, 84, 163)
                 .with_annotation(
                     Annotation::secondary(DEFAULT_NAME, 105, 112).with_message("an annotation"),
                 )
@@ -69,33 +73,29 @@ function main(): int|string {
                 .with_note("this is a note"),
         )
         .with_issue(
-            Issue::help("H123", "some help here", DEFAULT_NAME, 137, 147)
+            Issue::help("H123", "some help here")
+                .with_source(DEFAULT_NAME, 137, 147)
                 .with_annotation(
                     Annotation::secondary(DEFAULT_NAME, 35, 42).with_message("an annotation"),
                 )
                 .with_note("this is a note"),
         )
         .with_issue(
-            Issue::bug(
-                "E123",
-                "`match` arms have incompatible types",
-                Some(DEFAULT_NAME),
-                Some(84),
-                Some(163),
-            )
-            .with_annotation(
-                Annotation::secondary(DEFAULT_NAME, 110, 111)
-                    .with_message("this is found to be of type `{int}`"),
-            )
-            .with_annotation(
-                Annotation::secondary(DEFAULT_NAME, 126, 127)
-                    .with_message("this is found to be of type `{int}`"),
-            )
-            .with_annotation(
-                Annotation::secondary(DEFAULT_NAME, 148, 156)
-                    .with_message("expected `{int}`, found `{string}`"),
-            )
-            .with_note("for more information about this error, try `ara --explain E0308`"),
+            Issue::bug("E123", "`match` arms have incompatible types")
+                .with_source(DEFAULT_NAME, 84, 163)
+                .with_annotation(
+                    Annotation::secondary(DEFAULT_NAME, 110, 111)
+                        .with_message("this is found to be of type `{int}`"),
+                )
+                .with_annotation(
+                    Annotation::secondary(DEFAULT_NAME, 126, 127)
+                        .with_message("this is found to be of type `{int}`"),
+                )
+                .with_annotation(
+                    Annotation::secondary(DEFAULT_NAME, 148, 156)
+                        .with_message("expected `{int}`, found `{string}`"),
+                )
+                .with_note("for more information about this error, try `ara --explain E0308`"),
         )
         .with_footer(ReportFooter::new("this is a report footer message"));
 

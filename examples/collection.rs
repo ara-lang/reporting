@@ -33,26 +33,21 @@ function foo(Bar&float) {}
 
     let first_report = Report::new()
         .with_issue(
-            Issue::error(
-                "E0417",
-                "`match` arms have incompatible types",
-                first_origin,
-                6,
-                67,
-            )
-            .with_annotation(
-                Annotation::secondary(first_origin, 26, 27)
-                    .with_message("this is found to be of type `{int}`"),
-            )
-            .with_annotation(
-                Annotation::secondary(first_origin, 38, 39)
-                    .with_message("this is found to be of type `{int}`"),
-            )
-            .with_annotation(
-                Annotation::secondary(first_origin, 56, 64)
-                    .with_message("expected `{int}`, found `{string}`"),
-            )
-            .with_note("for more information about this error, try `ara --explain E0417`"),
+            Issue::error("E0417", "`match` arms have incompatible types")
+                .with_source(first_origin, 6, 67)
+                .with_annotation(
+                    Annotation::secondary(first_origin, 26, 27)
+                        .with_message("this is found to be of type `{int}`"),
+                )
+                .with_annotation(
+                    Annotation::secondary(first_origin, 38, 39)
+                        .with_message("this is found to be of type `{int}`"),
+                )
+                .with_annotation(
+                    Annotation::secondary(first_origin, 56, 64)
+                        .with_message("expected `{int}`, found `{string}`"),
+                )
+                .with_note("for more information about this error, try `ara --explain E0417`"),
         )
         .with_footer(
             ReportFooter::new("this is a report footer message")
@@ -64,10 +59,8 @@ function foo(Bar&float) {}
             Issue::error(
                 "P0015",
                 "scalar type `float` cannot be used in an intersection",
-                second_origin,
-                18,
-                23,
             )
+            .with_source(second_origin, 18, 23)
             .with_annotation(
                 Annotation::secondary(second_origin, 17, 19)
                     .with_message("scalar type `float` cannot be used in an intersection"),
@@ -75,13 +68,7 @@ function foo(Bar&float) {}
             .with_note("a scalar type is either `int`, `float`, `string`, or `bool`.")
             .with_note("try using a different type for the intersection."),
         )
-        .with_issue(Issue::bug(
-            "B0001",
-            "failed to read the file",
-            None::<String>,
-            None,
-            None,
-        ))
+        .with_issue(Issue::bug("B0001", "failed to read the file"))
         .with_footer(
             ReportFooter::new("this is a report footer message")
                 .with_note("this is a note message"),

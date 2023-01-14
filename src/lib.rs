@@ -44,8 +44,8 @@ pub trait Reportable {
 /// use ara_reporting::issue::IssueSeverity;
 ///
 /// let report = Report::new()
-///     .with_issue(Issue::error("0003", "standalone type `void` cannot be part of a union", "main.ara", 10, 14))
-///     .with_issue(Issue::warning("0023", "...", "some_file.ara", 9, 10))
+///     .with_issue(Issue::error("0003", "standalone type `void` cannot be part of a union").with_source("main.ara", 10, 14))
+///     .with_issue(Issue::warning("0023", "...").with_source("some_file.ara", 9, 10))
 ///     .with_footer(ReportFooter::new("This is a report message"));
 ///
 /// # assert_eq!(report.issues.len(), 2);
@@ -55,15 +55,11 @@ pub trait Reportable {
 /// # assert_eq!(report.issues[0].severity, IssueSeverity::Error);
 /// # assert_eq!(report.issues[0].code, "0003");
 /// # assert_eq!(report.issues[0].message, "standalone type `void` cannot be part of a union");
-/// # assert_eq!(report.issues[0].origin, Some("main.ara".to_string()));
-/// # assert_eq!(report.issues[0].from, Some(10));
-/// # assert_eq!(report.issues[0].to, Some(14));
+/// # assert_eq!(report.issues[0].source, Some(("main.ara".to_string(), 10, 14)));
 /// # assert_eq!(report.issues[1].severity, IssueSeverity::Warning);
 /// # assert_eq!(report.issues[1].code, "0023");
 /// # assert_eq!(report.issues[1].message, "...");
-/// # assert_eq!(report.issues[1].origin, Some("some_file.ara".to_string()));
-/// # assert_eq!(report.issues[1].from, Some(9));
-/// # assert_eq!(report.issues[1].to, Some(10));
+/// # assert_eq!(report.issues[1].source, Some(("some_file.ara".to_string(), 9, 10)));
 /// ```
 impl Report {
     /// Create a new report.
@@ -102,19 +98,19 @@ impl Report {
     /// let empty_report = Report::new();
     ///
     /// let first_report = Report::new()
-    ///     .with_issue(Issue::help("0001", "...", "main.ara", 10, 11))
-    ///     .with_issue(Issue::warning("0002", "...", "some_file.ara", 9, 10))
-    ///     .with_issue(Issue::note("0003", "...", "main.ara", 10, 11));
+    ///     .with_issue(Issue::help("0001", "...").with_source("main.ara", 10, 11))
+    ///     .with_issue(Issue::warning("0002", "...").with_source("some_file.ara", 9, 10))
+    ///     .with_issue(Issue::note("0003", "...").with_source("main.ara", 10, 11));
     ///
     /// let second_report = Report::new()
-    ///     .with_issue(Issue::warning("0001", "...", "some_file.ara", 9, 10))
-    ///     .with_issue(Issue::bug("0002", "...", Some("main.ara"), Some(10), Some(11)))
-    ///     .with_issue(Issue::error("0003", "...", "main.ara", 10, 11));
+    ///     .with_issue(Issue::warning("0001", "...").with_source("some_file.ara", 9, 10))
+    ///     .with_issue(Issue::bug("0002", "...").with_source("main.ara", 10, 11))
+    ///     .with_issue(Issue::error("0003", "...").with_source("main.ara", 10, 11));
     ///
     /// let third_report = Report::new()
-    ///     .with_issue(Issue::help("0001", "...", "main.ara", 10, 11))
-    ///     .with_issue(Issue::note("0002", "...", "main.ara", 10, 11))
-    ///     .with_issue(Issue::note("0003", "...", "main.ara", 10, 11));
+    ///     .with_issue(Issue::help("0001", "...").with_source("main.ara", 10, 11))
+    ///     .with_issue(Issue::note("0002", "...").with_source("main.ara", 10, 11))
+    ///     .with_issue(Issue::note("0003", "...").with_source("main.ara", 10, 11));
     ///
     /// assert_eq!(empty_report.severity(), None);
     /// assert_eq!(first_report.severity().unwrap(), IssueSeverity::Warning);

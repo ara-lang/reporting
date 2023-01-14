@@ -324,12 +324,10 @@ impl ReportBuilder<'_> {
                         .collect(),
                 );
 
-            if let (Some(origin), Some(from), Some(to)) =
-                (issue.origin.as_ref(), issue.from, issue.to)
-            {
+            if let Some((source, from, to)) = &issue.source {
                 diagnostic = diagnostic.with_labels(vec![Label::primary(
-                    *files_ids.get(origin).unwrap_or(&0),
-                    from..to,
+                    *files_ids.get(source).unwrap_or(&0),
+                    *from..*to,
                 )])
             }
 
