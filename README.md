@@ -4,7 +4,7 @@
 [![Crates.io](https://img.shields.io/crates/v/ara_reporting.svg)](https://crates.io/crates/ara_reporting)
 [![Docs](https://docs.rs/ara_reporting/badge.svg)](https://docs.rs/ara_reporting/latest/ara_reporting/)
 
-A Reporting library for for Ara Programming Language 📃
+A Reporting library for Ara Programming Language 📃
 
 Internally, Ara reporting uses the [codespan-reporting](https://github.com/brendanzab/codespan) library to build a report of the issues found in the code.
 
@@ -29,6 +29,7 @@ use ara_reporting::builder::ReportBuilder;
 use ara_reporting::error::Error;
 use ara_reporting::issue::Issue;
 use ara_reporting::Report;
+use ara_reporting::ReportFooter;
 use ara_source::source::Source;
 use ara_source::source::SourceKind;
 use ara_source::SourceMap;
@@ -45,31 +46,31 @@ $b = match $a {
 
     let map = SourceMap::new(vec![Source::new(SourceKind::Script, origin, code)]);
 
-    let report = Report::new().with_issue(
-        Issue::error(
-            "E0417",
-            "`match` arms have incompatible types",
-            origin,
-            6,
-            67,
+    let report = Report::new()
+        .with_issue(
+            Issue::error("E0417", "`match` arms have incompatible types")
+                .with_source(origin, 6, 67)
+                .with_annotation(
+                    Annotation::new(origin, 26, 27).with_message("this is found to be of type `{int}`"),
+                )
+                .with_annotation(
+                    Annotation::new(origin, 38, 39).with_message("this is found to be of type `{int}`"),
+                )
+                .with_annotation(
+                    Annotation::new(origin, 56, 64).with_message("expected `{int}`, found `{string}`"),
+                )
+                .with_note("for more information about this error, try `ara --explain E0417`"),
         )
-        .with_annotation(
-            Annotation::new(origin, 26, 27).with_message("this is found to be of type `{int}`"),
-        )
-        .with_annotation(
-            Annotation::new(origin, 38, 39).with_message("this is found to be of type `{int}`"),
-        )
-        .with_annotation(
-            Annotation::new(origin, 56, 64).with_message("expected `{int}`, found `{string}`"),
-        )
-        .with_note("for more information about this error, try `ara --explain E0417`"),
-    );
+        .with_footer(
+            ReportFooter::new("this is a report footer message")
+                .with_note("this is a note message"),
+        );
 
-    let builder = ReportBuilder::new(&map, report)
+    let builder = ReportBuilder::new(&map)
         .with_colors(ColorChoice::Always)
         .with_charset(CharSet::Unicode);
 
-    builder.print()
+    builder.print(&report)
 }
 ```
 
