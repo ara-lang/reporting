@@ -23,9 +23,7 @@ pub struct Issue {
     pub severity: IssueSeverity,
     pub code: String,
     pub message: String,
-    pub origin: String,
-    pub from: usize,
-    pub to: usize,
+    pub source: Option<(String, usize, usize)>,
     pub annotations: Vec<Annotation>,
     pub notes: Vec<String>,
 }
@@ -40,19 +38,19 @@ pub struct Issue {
 /// # use ara_reporting::issue::Issue;
 /// # use ara_reporting::issue::IssueSeverity;
 /// # use ara_reporting::annotation::Annotation;
-/// let issue = Issue::error("0003", "standalone type `void` cannot be part of a union", "main.ara", 10, 14)
+/// let issue = Issue::error("0003", "standalone type `void` cannot be part of a union")
+///     .with_source("main.ara", 10, 14)
 ///     .with_annotation(
 ///         Annotation::secondary("main.ara", 9, 10)
 ///             .with_message("union type starts here")
 ///     )
 ///    .with_note("`void`, `never`, and `mixed` are standalone types and cannot be part of a union, or an intersection")
-///    .with_note("consider using `null` instead of `void`")
-/// ;
+///    .with_note("consider using `null` instead of `void`");
+///
 /// # assert_eq!(issue.severity, IssueSeverity::Error);
 /// # assert_eq!(issue.code, "0003");
 /// # assert_eq!(issue.message, "standalone type `void` cannot be part of a union");
-/// # assert_eq!(issue.from, 10);
-/// # assert_eq!(issue.to, 14);
+/// # assert_eq!(issue.source, Some(("main.ara".to_string(), 10, 14)));
 /// # assert_eq!(issue.annotations.len(), 1);
 /// # assert_eq!(issue.annotations[0].from, 9);
 /// # assert_eq!(issue.annotations[0].to, 10);
@@ -64,21 +62,16 @@ pub struct Issue {
 /// ```
 impl Issue {
     /// Create a new issue with the given code and message.
-    pub fn new<C: Into<String>, M: Into<String>, O: Into<String>>(
+    pub fn new<C: Into<String>, M: Into<String>>(
         severity: IssueSeverity,
         code: C,
         message: M,
-        origin: O,
-        from: usize,
-        to: usize,
     ) -> Self {
         Self {
             severity,
             code: code.into(),
             message: message.into(),
-            origin: origin.into(),
-            from,
-            to,
+            source: None,
             annotations: Vec::new(),
             notes: Vec::new(),
         }
@@ -92,18 +85,13 @@ impl Issue {
     /// use ara_reporting::issue::Issue;
     /// use ara_reporting::issue::IssueSeverity;
     ///
-    /// let issue = Issue::error("0003", "...", "main.ara", 10, 11);
+    /// let issue = Issue::error("0003", "...")
+    ///     .with_source("main.ara", 10, 11);
     ///
     /// assert_eq!(issue.severity, IssueSeverity::Error);
     /// ```
-    pub fn error<C: Into<String>, M: Into<String>, O: Into<String>>(
-        code: C,
-        message: M,
-        origin: O,
-        from: usize,
-        to: usize,
-    ) -> Self {
-        Self::new(IssueSeverity::Error, code, message, origin, from, to)
+    pub fn error<C: Into<String>, M: Into<String>>(code: C, message: M) -> Self {
+        Self::new(IssueSeverity::Error, code, message)
     }
 
     /// Create a new warning issue with the given code and message.
@@ -114,18 +102,13 @@ impl Issue {
     /// use ara_reporting::issue::Issue;
     /// use ara_reporting::issue::IssueSeverity;
     ///
-    /// let issue = Issue::warning("0003", "...", "main.ara", 10, 11);
+    /// let issue = Issue::warning("0003", "...")
+    ///     .with_source("main.ara", 10, 11);
     ///
     /// assert_eq!(issue.severity, IssueSeverity::Warning);
     /// ```
-    pub fn warning<C: Into<String>, M: Into<String>, O: Into<String>>(
-        code: C,
-        message: M,
-        origin: O,
-        from: usize,
-        to: usize,
-    ) -> Self {
-        Self::new(IssueSeverity::Warning, code, message, origin, from, to)
+    pub fn warning<C: Into<String>, M: Into<String>>(code: C, message: M) -> Self {
+        Self::new(IssueSeverity::Warning, code, message)
     }
 
     /// Create a new help issue with the given code and message.
@@ -136,18 +119,13 @@ impl Issue {
     /// use ara_reporting::issue::Issue;
     /// use ara_reporting::issue::IssueSeverity;
     ///
-    /// let issue = Issue::help("0003", "...", "main.ara", 10, 11);
+    /// let issue = Issue::help("0003", "...")
+    ///     .with_source("main.ara", 10, 11);
     ///
     /// assert_eq!(issue.severity, IssueSeverity::Help);
     /// ```
-    pub fn help<C: Into<String>, M: Into<String>, O: Into<String>>(
-        code: C,
-        message: M,
-        origin: O,
-        from: usize,
-        to: usize,
-    ) -> Self {
-        Self::new(IssueSeverity::Help, code, message, origin, from, to)
+    pub fn help<C: Into<String>, M: Into<String>>(code: C, message: M) -> Self {
+        Self::new(IssueSeverity::Help, code, message)
     }
 
     /// Create a new note issue with the given code and message.
@@ -158,18 +136,13 @@ impl Issue {
     /// use ara_reporting::issue::Issue;
     /// use ara_reporting::issue::IssueSeverity;
     ///
-    /// let issue = Issue::note("0003", "...", "main.ara", 10, 11);
+    /// let issue = Issue::note("0003", "...")
+    ///     .with_source("main.ara", 10, 11);
     ///
     /// assert_eq!(issue.severity, IssueSeverity::Note);
     /// ```
-    pub fn note<C: Into<String>, M: Into<String>, O: Into<String>>(
-        code: C,
-        message: M,
-        origin: O,
-        from: usize,
-        to: usize,
-    ) -> Self {
-        Self::new(IssueSeverity::Note, code, message, origin, from, to)
+    pub fn note<C: Into<String>, M: Into<String>>(code: C, message: M) -> Self {
+        Self::new(IssueSeverity::Note, code, message)
     }
 
     /// Create a new bug issue with the given code and message.
@@ -180,18 +153,13 @@ impl Issue {
     /// use ara_reporting::issue::Issue;
     /// use ara_reporting::issue::IssueSeverity;
     ///
-    /// let issue = Issue::bug("0003", "...", "main.ara", 10, 11);
+    /// let issue = Issue::bug("0003", "...")
+    ///     .with_source("main.ara", 10, 11);
     ///
     /// assert_eq!(issue.severity, IssueSeverity::Bug);
     /// ```
-    pub fn bug<C: Into<String>, M: Into<String>, O: Into<String>>(
-        code: C,
-        message: M,
-        origin: O,
-        from: usize,
-        to: usize,
-    ) -> Self {
-        Self::new(IssueSeverity::Bug, code, message, origin, from, to)
+    pub fn bug<C: Into<String>, M: Into<String>>(code: C, message: M) -> Self {
+        Self::new(IssueSeverity::Bug, code, message)
     }
 
     /// Add an annotation to this issue.
@@ -206,6 +174,14 @@ impl Issue {
     #[must_use]
     pub fn with_note<S: Into<String>>(mut self, note: S) -> Self {
         self.notes.push(note.into());
+
+        self
+    }
+
+    /// Add a source/position details to this issue.
+    #[must_use]
+    pub fn with_source<O: Into<String>>(mut self, source: O, from: usize, to: usize) -> Self {
+        self.source = Some((source.into(), from, to));
 
         self
     }
@@ -266,16 +242,21 @@ impl std::fmt::Display for IssueSeverity {
 /// ```rust
 /// use ara_reporting::issue::Issue;
 ///
-/// let issue = Issue::error("E0231", "unexpected token `{`, expecting `[`", "main.ara", 10, 1);
-///
+/// let issue = Issue::error("E0231", "unexpected token `{`, expecting `[`")
+///     .with_source("main.ara", 10, 1);
 /// assert_eq!(issue.to_string(), "error[E0231]: unexpected token `{`, expecting `[` at main.ara@10:1");
+///
+/// let issue = Issue::bug("B0001", "failed to read the file");
+/// assert_eq!(issue.to_string(), "bug[B0001]: failed to read the file");
 /// ```
 impl std::fmt::Display for Issue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "{}[{}]: {} at {}@{}:{}",
-            self.severity, self.code, self.message, self.origin, self.from, self.to
-        )
+        write!(f, "{}[{}]: {}", self.severity, self.code, self.message)?;
+
+        if let Some((source, from, to)) = &self.source {
+            write!(f, " at {}@{}:{}", source, from, to)?;
+        }
+
+        Ok(())
     }
 }
