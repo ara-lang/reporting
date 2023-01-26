@@ -351,11 +351,11 @@ impl ReportBuilder<'_> {
 
                 let summary = entries
                     .iter()
-                    .map(|(severity, count)| format!("{} {}(s)", count, severity))
+                    .map(|(severity, count)| format!("{count} {severity}(s)"))
                     .collect::<Vec<String>>()
                     .join(", ");
 
-                notes.push(format!("summary: {}", summary));
+                notes.push(format!("summary: {summary}"));
             }
 
             diagnostics.push(

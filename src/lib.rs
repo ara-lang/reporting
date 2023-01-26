@@ -131,7 +131,7 @@ impl Default for Report {
 impl std::fmt::Display for Report {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         for issue in &self.issues {
-            writeln!(f, "{}", issue)?;
+            writeln!(f, "{issue}")?;
         }
 
         Ok(())

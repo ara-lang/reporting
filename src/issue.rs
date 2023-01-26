@@ -296,7 +296,7 @@ impl std::fmt::Display for Issue {
         }
 
         if let Some((source, from, to)) = &self.source {
-            write!(f, " at {}@{}:{}", source, from, to)?;
+            write!(f, " at {source}@{from}:{to}")?;
         }
 
         Ok(())
