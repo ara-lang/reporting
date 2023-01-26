@@ -53,11 +53,11 @@ pub trait Reportable {
 /// # assert_eq!(footer.message, "This is a report message");
 /// # assert!(footer.notes.is_empty());
 /// # assert_eq!(report.issues[0].severity, IssueSeverity::Error);
-/// # assert_eq!(report.issues[0].code, "0003");
+/// # assert_eq!(report.issues[0].code, Some("0003".to_string()));
 /// # assert_eq!(report.issues[0].message, "standalone type `void` cannot be part of a union");
 /// # assert_eq!(report.issues[0].source, Some(("main.ara".to_string(), 10, 14)));
 /// # assert_eq!(report.issues[1].severity, IssueSeverity::Warning);
-/// # assert_eq!(report.issues[1].code, "0023");
+/// # assert_eq!(report.issues[1].code, Some("0023".to_string()));
 /// # assert_eq!(report.issues[1].message, "...");
 /// # assert_eq!(report.issues[1].source, Some(("some_file.ara".to_string(), 9, 10)));
 /// ```
