@@ -159,6 +159,23 @@ impl Issue {
         Self::new(IssueSeverity::Bug, message).with_code(code)
     }
 
+    /// Create a new error `Issue` from a string.
+    ///
+    /// Example:
+    ///
+    /// ```rust
+    /// use ara_reporting::issue::Issue;
+    /// use ara_reporting::issue::IssueSeverity;
+    ///
+    /// let issue = Issue::from_string("invalid digit found in string");
+    ///
+    /// assert_eq!(issue.severity, IssueSeverity::Error);
+    /// assert_eq!("invalid digit found in string", issue.message);
+    /// ```
+    pub fn from_string<M: Into<String>>(message: M) -> Self {
+        Self::new(IssueSeverity::Error, message)
+    }
+
     /// Add a code to this issue.
     #[must_use]
     pub fn with_code<C: Into<String>>(mut self, code: C) -> Self {
