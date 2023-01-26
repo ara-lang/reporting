@@ -211,7 +211,7 @@ impl Issue {
 /// assert_eq!("invalid digit found in string", issue.message);
 ///
 /// let error: std::io::Error = std::fs::read_to_string("nonexistent_file.txt").unwrap_err();
-/// let issue: Issue = Issue::from(error.to_string());
+/// let issue: Issue = error.to_string().into();
 /// assert_eq!(IssueSeverity::Error, issue.severity);
 /// assert_eq!("No such file or directory (os error 2)", issue.message);
 /// ```
