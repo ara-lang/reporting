@@ -192,7 +192,7 @@ impl Issue {
     }
 }
 
-/// Returns `Issue` from any type that can be converted to `String`
+/// Returns an error `Issue` from anything that derives `std::error::Error`.
 ///
 /// Example:
 ///
@@ -200,25 +200,20 @@ impl Issue {
 /// use ara_reporting::issue::Issue;
 /// use ara_reporting::issue::IssueSeverity;
 ///
-/// let issue = Issue::from("some error just happened");
-/// assert_eq!(IssueSeverity::Error, issue.severity);
-/// assert_eq!("some error just happened", issue.message);
-/// assert_eq!(None, issue.code);
-///
 /// let error: std::num::ParseIntError = "NaN".parse::<u8>().unwrap_err();
-/// let issue: Issue = Issue::from(error.to_string());
+/// let issue: Issue = error.into();
 /// assert_eq!(IssueSeverity::Error, issue.severity);
 /// assert_eq!("invalid digit found in string", issue.message);
 ///
 /// let error: std::io::Error = std::fs::read_to_string("nonexistent_file.txt").unwrap_err();
-/// let issue: Issue = error.to_string().into();
+/// let issue: Issue = error.into();
 /// assert_eq!(IssueSeverity::Error, issue.severity);
 /// assert_eq!("No such file or directory (os error 2)", issue.message);
 /// ```
 #[doc(hidden)]
-impl<C: Into<String>> From<C> for Issue {
-    fn from(message: C) -> Self {
-        Issue::new(IssueSeverity::Error, message)
+impl<E: std::error::Error> From<E> for Issue {
+    fn from(error: E) -> Self {
+        Issue::new(IssueSeverity::Error, error.to_string())
     }
 }
 
