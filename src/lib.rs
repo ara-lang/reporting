@@ -147,6 +147,29 @@ impl From<Issue> for Report {
     }
 }
 
+/// Returns a report from anything that derives `std::error::Error`.
+///
+/// Example:
+///
+///```rust
+/// use ara_reporting::issue::IssueSeverity;
+/// use ara_reporting::Report;
+///
+/// let error: std::io::Error = std::fs::read_to_string("nonexistent_file.txt").unwrap_err();
+/// let report: Report = error.into();
+/// assert_eq!(report.issues.len(), 1);
+///
+/// let issue = report.issues.first().unwrap();
+/// assert_eq!(IssueSeverity::Error, issue.severity);
+/// assert_eq!(issue.message, "No such file or directory (os error 2)");
+/// ```
+#[doc(hidden)]
+impl<E: std::error::Error> From<E> for Report {
+    fn from(error: E) -> Self {
+        Report::new().with_issue(error.into())
+    }
+}
+
 /// A footer for a report.
 ///
 /// A footer is a message that is displayed at the end of a report.
