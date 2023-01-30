@@ -53,11 +53,11 @@ pub trait Reportable {
 /// # assert_eq!(footer.message, "This is a report message");
 /// # assert!(footer.notes.is_empty());
 /// # assert_eq!(report.issues[0].severity, IssueSeverity::Error);
-/// # assert_eq!(report.issues[0].code, "0003");
+/// # assert_eq!(report.issues[0].code, Some("0003".to_string()));
 /// # assert_eq!(report.issues[0].message, "standalone type `void` cannot be part of a union");
 /// # assert_eq!(report.issues[0].source, Some(("main.ara".to_string(), 10, 14)));
 /// # assert_eq!(report.issues[1].severity, IssueSeverity::Warning);
-/// # assert_eq!(report.issues[1].code, "0023");
+/// # assert_eq!(report.issues[1].code, Some("0023".to_string()));
 /// # assert_eq!(report.issues[1].message, "...");
 /// # assert_eq!(report.issues[1].source, Some(("some_file.ara".to_string(), 9, 10)));
 /// ```
@@ -131,7 +131,7 @@ impl Default for Report {
 impl std::fmt::Display for Report {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         for issue in &self.issues {
-            writeln!(f, "{}", issue)?;
+            writeln!(f, "{issue}")?;
         }
 
         Ok(())
@@ -144,6 +144,29 @@ impl From<Issue> for Report {
             issues: vec![val],
             footer: None,
         }
+    }
+}
+
+/// Returns a report from anything that derives `std::error::Error`.
+///
+/// Example:
+///
+///```rust
+/// use ara_reporting::issue::IssueSeverity;
+/// use ara_reporting::Report;
+///
+/// let error: std::io::Error = std::fs::read_to_string("nonexistent_file.txt").unwrap_err();
+/// let report: Report = error.into();
+/// assert_eq!(report.issues.len(), 1);
+///
+/// let issue = report.issues.first().unwrap();
+/// assert_eq!(IssueSeverity::Error, issue.severity);
+/// assert_eq!(issue.message, "No such file or directory (os error 2)");
+/// ```
+#[doc(hidden)]
+impl<E: std::error::Error> From<E> for Report {
+    fn from(error: E) -> Self {
+        Report::new().with_issue(error.into())
     }
 }
 

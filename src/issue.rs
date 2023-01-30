@@ -21,7 +21,7 @@ pub enum IssueSeverity {
 #[serde(rename_all = "snake_case")]
 pub struct Issue {
     pub severity: IssueSeverity,
-    pub code: String,
+    pub code: Option<String>,
     pub message: String,
     pub source: Option<(String, usize, usize)>,
     pub annotations: Vec<Annotation>,
@@ -35,7 +35,8 @@ pub struct Issue {
 /// Example:
 ///
 /// ```rust
-/// # use ara_reporting::issue::Issue;
+/// # use serde_json::Value::String;
+/// use ara_reporting::issue::Issue;
 /// # use ara_reporting::issue::IssueSeverity;
 /// # use ara_reporting::annotation::Annotation;
 /// let issue = Issue::error("0003", "standalone type `void` cannot be part of a union")
@@ -48,7 +49,7 @@ pub struct Issue {
 ///    .with_note("consider using `null` instead of `void`");
 ///
 /// # assert_eq!(issue.severity, IssueSeverity::Error);
-/// # assert_eq!(issue.code, "0003");
+/// # assert_eq!(issue.code, Some("0003".to_string()));
 /// # assert_eq!(issue.message, "standalone type `void` cannot be part of a union");
 /// # assert_eq!(issue.source, Some(("main.ara".to_string(), 10, 14)));
 /// # assert_eq!(issue.annotations.len(), 1);
@@ -62,14 +63,10 @@ pub struct Issue {
 /// ```
 impl Issue {
     /// Create a new issue with the given code and message.
-    pub fn new<C: Into<String>, M: Into<String>>(
-        severity: IssueSeverity,
-        code: C,
-        message: M,
-    ) -> Self {
+    pub fn new<M: Into<String>>(severity: IssueSeverity, message: M) -> Self {
         Self {
             severity,
-            code: code.into(),
+            code: None,
             message: message.into(),
             source: None,
             annotations: Vec::new(),
@@ -91,7 +88,7 @@ impl Issue {
     /// assert_eq!(issue.severity, IssueSeverity::Error);
     /// ```
     pub fn error<C: Into<String>, M: Into<String>>(code: C, message: M) -> Self {
-        Self::new(IssueSeverity::Error, code, message)
+        Self::new(IssueSeverity::Error, message).with_code(code)
     }
 
     /// Create a new warning issue with the given code and message.
@@ -108,7 +105,7 @@ impl Issue {
     /// assert_eq!(issue.severity, IssueSeverity::Warning);
     /// ```
     pub fn warning<C: Into<String>, M: Into<String>>(code: C, message: M) -> Self {
-        Self::new(IssueSeverity::Warning, code, message)
+        Self::new(IssueSeverity::Warning, message).with_code(code)
     }
 
     /// Create a new help issue with the given code and message.
@@ -125,7 +122,7 @@ impl Issue {
     /// assert_eq!(issue.severity, IssueSeverity::Help);
     /// ```
     pub fn help<C: Into<String>, M: Into<String>>(code: C, message: M) -> Self {
-        Self::new(IssueSeverity::Help, code, message)
+        Self::new(IssueSeverity::Help, message).with_code(code)
     }
 
     /// Create a new note issue with the given code and message.
@@ -142,7 +139,7 @@ impl Issue {
     /// assert_eq!(issue.severity, IssueSeverity::Note);
     /// ```
     pub fn note<C: Into<String>, M: Into<String>>(code: C, message: M) -> Self {
-        Self::new(IssueSeverity::Note, code, message)
+        Self::new(IssueSeverity::Note, message).with_code(code)
     }
 
     /// Create a new bug issue with the given code and message.
@@ -159,7 +156,32 @@ impl Issue {
     /// assert_eq!(issue.severity, IssueSeverity::Bug);
     /// ```
     pub fn bug<C: Into<String>, M: Into<String>>(code: C, message: M) -> Self {
-        Self::new(IssueSeverity::Bug, code, message)
+        Self::new(IssueSeverity::Bug, message).with_code(code)
+    }
+
+    /// Create a new error `Issue` from a string.
+    ///
+    /// Example:
+    ///
+    /// ```rust
+    /// use ara_reporting::issue::Issue;
+    /// use ara_reporting::issue::IssueSeverity;
+    ///
+    /// let issue = Issue::from_string("invalid digit found in string");
+    ///
+    /// assert_eq!(issue.severity, IssueSeverity::Error);
+    /// assert_eq!("invalid digit found in string", issue.message);
+    /// ```
+    pub fn from_string<M: Into<String>>(message: M) -> Self {
+        Self::new(IssueSeverity::Error, message)
+    }
+
+    /// Add a code to this issue.
+    #[must_use]
+    pub fn with_code<C: Into<String>>(mut self, code: C) -> Self {
+        self.code = Some(code.into());
+
+        self
     }
 
     /// Add an annotation to this issue.
@@ -184,6 +206,31 @@ impl Issue {
         self.source = Some((source.into(), from, to));
 
         self
+    }
+}
+
+/// Returns an error `Issue` from anything that derives `std::error::Error`.
+///
+/// Example:
+///
+///```rust
+/// use ara_reporting::issue::Issue;
+/// use ara_reporting::issue::IssueSeverity;
+///
+/// let error: std::num::ParseIntError = "NaN".parse::<u8>().unwrap_err();
+/// let issue: Issue = error.into();
+/// assert_eq!(IssueSeverity::Error, issue.severity);
+/// assert_eq!("invalid digit found in string", issue.message);
+///
+/// let error: std::io::Error = std::fs::read_to_string("nonexistent_file.txt").unwrap_err();
+/// let issue: Issue = error.into();
+/// assert_eq!(IssueSeverity::Error, issue.severity);
+/// assert_eq!("No such file or directory (os error 2)", issue.message);
+/// ```
+#[doc(hidden)]
+impl<E: std::error::Error> From<E> for Issue {
+    fn from(error: E) -> Self {
+        Issue::new(IssueSeverity::Error, error.to_string())
     }
 }
 
@@ -241,6 +288,7 @@ impl std::fmt::Display for IssueSeverity {
 ///
 /// ```rust
 /// use ara_reporting::issue::Issue;
+/// use ara_reporting::issue::IssueSeverity;
 ///
 /// let issue = Issue::error("E0231", "unexpected token `{`, expecting `[`")
 ///     .with_source("main.ara", 10, 1);
@@ -248,13 +296,19 @@ impl std::fmt::Display for IssueSeverity {
 ///
 /// let issue = Issue::bug("B0001", "failed to read the file");
 /// assert_eq!(issue.to_string(), "bug[B0001]: failed to read the file");
+///
+/// let issue = Issue::new(IssueSeverity::Error, "some error just happened");
+/// assert_eq!(issue.to_string(), "error: some error just happened");
 /// ```
 impl std::fmt::Display for Issue {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}[{}]: {}", self.severity, self.code, self.message)?;
+        match &self.code {
+            Some(code) => write!(f, "{}[{}]: {}", self.severity, code, self.message)?,
+            None => write!(f, "{}: {}", self.severity, self.message)?,
+        }
 
         if let Some((source, from, to)) = &self.source {
-            write!(f, " at {}@{}:{}", source, from, to)?;
+            write!(f, " at {source}@{from}:{to}")?;
         }
 
         Ok(())

@@ -298,7 +298,6 @@ impl ReportBuilder<'_> {
 
         for issue in &report.issues {
             let mut diagnostic = Diagnostic::new(issue.severity.into())
-                .with_code(&issue.code)
                 .with_message(&issue.message)
                 .with_notes(issue.notes.clone())
                 .with_labels(
@@ -324,6 +323,10 @@ impl ReportBuilder<'_> {
                         .collect(),
                 );
 
+            if let Some(code) = &issue.code {
+                diagnostic = diagnostic.with_code(code);
+            }
+
             if let Some((source, from, to)) = &issue.source {
                 diagnostic = diagnostic.with_labels(vec![Label::primary(
                     *files_ids.get(source).unwrap_or(&0),
@@ -348,11 +351,11 @@ impl ReportBuilder<'_> {
 
                 let summary = entries
                     .iter()
-                    .map(|(severity, count)| format!("{} {}(s)", count, severity))
+                    .map(|(severity, count)| format!("{count} {severity}(s)"))
                     .collect::<Vec<String>>()
                     .join(", ");
 
-                notes.push(format!("summary: {}", summary));
+                notes.push(format!("summary: {summary}"));
             }
 
             diagnostics.push(
